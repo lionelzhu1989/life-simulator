@@ -39,7 +39,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 .stat-item{text-align:center;padding:10px;background:#f8f9fa;border-radius:8px;}
 .stat-item .num{font-size:18px;font-weight:700;color:var(--primary);}
 .stat-item .label{font-size:11px;color:var(--text-light);margin-top:2px;}
-.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;-webkit-user-select:none;}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;-webkit-user-select:none;min-height:44px;}
 .btn:active{transform:scale(0.96);opacity:.85;}
 .btn-primary{background:var(--primary);color:#fff;}
 .btn-success{background:var(--success);color:#fff;}
@@ -47,7 +47,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 .btn-warning{background:var(--warning);color:#fff;}
 .btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary);}
 .btn-block{display:flex;width:100%;}
-.btn-sm{padding:6px 14px;font-size:12px;}
+.btn-sm{padding:8px 16px;font-size:12px;min-height:38px;}
 .btn-lg{padding:14px 32px;font-size:16px;}
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
 .list-item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:14px 12px;min-height:48px;border-bottom:1px solid #f0f0f0;}
@@ -3058,11 +3058,11 @@ async function advanceMonth(){
           const currentPrice=G.stockPrices[code]||0;
           if(currentPrice<sp.openPrice){
             const profit=Math.round((sp.openPrice-currentPrice)*sp.shares);
-            G.cash+=sp.shares*sp.openPrice+profit;
+            G.cash=clampCash(G.cash+sp.shares*sp.openPrice+profit);
             G.events.push({text:'📉 做空'+code+'盈利 '+fmt(profit),type:'good'});
           }else{
             const loss=Math.round((currentPrice-sp.openPrice)*sp.shares);
-            G.cash+=Math.max(0,sp.shares*sp.openPrice-loss);
+            G.cash=clampCash(G.cash+Math.max(0,sp.shares*sp.openPrice-loss));
             G.events.push({text:'📈 做空'+code+'亏损 '+fmt(loss),type:'bad'});
           }
           delete G.shortPositions[code];
@@ -3746,14 +3746,14 @@ function selectDecisionOption(optIndex){
   if(opt.resultChance!==undefined){
     if(Math.random()<opt.resultChance){
       const rg=opt.resultGood;
-      if(rg.cash)G.cash+=rg.cash;
+      if(rg.cash)G.cash=clampCash(G.cash+rg.cash);
       if(rg.health)G.health=clamp(G.health+rg.health,0,200);
       if(rg.mood)G.mood=clamp(G.mood+rg.mood,0,200);
       if(rg.IQ)G.IQ=clamp(G.IQ+rg.IQ,0,200);
       resultText=opt.resultWin;
     }else{
       const rb=opt.resultBad;
-      if(rb.cash)G.cash+=rb.cash;
+      if(rb.cash)G.cash=clampCash(G.cash+rb.cash);
       if(rb.health)G.health=clamp(G.health+rb.health,0,200);
       if(rb.mood)G.mood=clamp(G.mood+rb.mood,0,200);
       resultText=opt.resultFail;
@@ -3928,7 +3928,7 @@ function triggerGatherEvent(type){
   ];
   const pool=type==='premium'?premiumEvents:normalEvents;
   const evt=pool[Math.floor(Math.random()*pool.length)];
-  if(evt.fx){for(const k in evt.fx){if(k==='cash'){G.cash+=evt.fx[k];}else if(k==='mood'){G.mood=clamp(G.mood+evt.fx[k],0,200);}else{G[k]=clamp((G[k]||0)+evt.fx[k],0,200);}}}
+  if(evt.fx){for(const k in evt.fx){if(k==='cash'){G.cash=clampCash(G.cash+evt.fx[k]);}else if(k==='mood'){G.mood=clamp(G.mood+evt.fx[k],0,200);}else{G[k]=clamp((G[k]||0)+evt.fx[k],0,200);}}}
   const fxStr=Object.entries(evt.fx).map(([k,v])=>{if(k==='cash')return '💰 '+(v>0?'+':'')+'¥'+Math.abs(v);if(k==='mood')return '😊 '+(v>0?'+':'')+v;return '🧠 +'+v;}).join(' ');
   showFloatText('🤝 '+evt.title,true);showFloatText(fxStr,true);
   // Build contacts display
@@ -4264,7 +4264,7 @@ function confirmTrade(){
     // Safety: re-check holdings haven't changed
     const currentHoldings=G.stockHoldings[code]||0;
     if(shares>currentHoldings){showToast('持仓不足！');closeTradeModal();return;}
-    G.cash+=revenue;
+    G.cash=clampCash(G.cash+revenue);
     G.stockHoldings[code]-=shares;
     if(G.stockHoldings[code]<=0)delete G.stockHoldings[code];
     if(!G.lifeEvents)G.lifeEvents=[];
@@ -4309,7 +4309,7 @@ function buyHouse(houseId){
   const h=HOUSES.find(x=>x.id===houseId);
   if(G.houses.find(x=>x.id===houseId)){showToast('已拥有该房产');return;}
   showModal({title:'购买 '+h.name,content:'价格：'+fmt(h.price)+'\n选择付款方式：',confirmText:'全款购买',success(res){
-    if(res.confirm){if(G.cash<h.price){showModal({title:'余额不足',content:'现金不足以全款购买！',showCancel:false});return;}G.cash-=h.price;G.houses.push({id:h.id,own:true,loan:false,loanBalance:0,loanTerm:0,loanMonthly:0,marketValue:h.price});if(!G.lifeEvents)G.lifeEvents=[];G.lifeEvents.push({month:G.totalMonths,icon:'🏠',title:'购买'+h.name,detail:'花'+fmt(h.price)+'购买'+h.name,type:'invest'});saveGame();refreshHouse();refreshLife();showFloatText('🏠 购入'+h.name,true);}
+    if(res.confirm){if(G.cash<h.price){showModal({title:'余额不足',content:'现金不足以全款购买！',showCancel:false});return;}G.cash=clampCash(G.cash-h.price);G.houses.push({id:h.id,own:true,loan:false,loanBalance:0,loanTerm:0,loanMonthly:0,marketValue:h.price});if(!G.lifeEvents)G.lifeEvents=[];G.lifeEvents.push({month:G.totalMonths,icon:'🏠',title:'购买'+h.name,detail:'花'+fmt(h.price)+'购买'+h.name,type:'invest'});saveGame();refreshHouse();refreshLife();showFloatText('🏠 购入'+h.name,true);}
     else showLoanModal(h);
   }});
 }
@@ -4321,14 +4321,14 @@ function showLoanModal(h){
   });
   const text=options.map((o,i)=>(i+1)+'. 首付'+(o.dp*100)+'%（'+fmt(o.downPay)+'），贷'+fmt(o.loan)+'，月供'+fmt(o.monthly)+'，'+o.term+'年').join('\n');
   showModal({title:h.name+' - 按揭贷款',content:'房屋总价：'+fmt(h.price)+'\n\n'+text,confirmText:'首付30%',success(res){
-    if(res.confirm){const o=options[0];if(G.cash<o.downPay){showModal({title:'余额不足',content:'首付需要'+fmt(o.downPay)+'，现金不足！',showCancel:false});return;}G.cash-=o.downPay;G.houses.push({id:h.id,own:false,loan:true,loanBalance:o.loan,loanTerm:o.term*12,loanMonthly:o.monthly,marketValue:h.price});saveGame();refreshHouse();refreshLife();showFloatText('🏠 购入'+h.name,true);}
+    if(res.confirm){const o=options[0];if(G.cash<o.downPay){showModal({title:'余额不足',content:'首付需要'+fmt(o.downPay)+'，现金不足！',showCancel:false});return;}G.cash=clampCash(G.cash-o.downPay);G.houses.push({id:h.id,own:false,loan:true,loanBalance:o.loan,loanTerm:o.term*12,loanMonthly:o.monthly,marketValue:h.price});saveGame();refreshHouse();refreshLife();showFloatText('🏠 购入'+h.name,true);}
   }});
 }
 function sellHouse(houseId){
   const idx=G.houses.findIndex(x=>x.id===houseId);if(idx===-1)return;
   const h=G.houses[idx];const info=HOUSES.find(x=>x.id===houseId);const revenue=h.marketValue-(h.loanBalance||0);
   showModal({title:'出售 '+(info?info.name:houseId),content:'市场估值：'+fmt(h.marketValue)+'\n贷款余额：'+fmt(h.loanBalance||0)+'\n净收入：'+fmt(revenue),success(res){
-    if(res.confirm){G.cash+=revenue;G.houses.splice(idx,1);saveGame();refreshHouse();refreshLife();showFloatText('💰 +'+fmt(revenue),true);}
+    if(res.confirm){G.cash=clampCash(G.cash+revenue);G.houses.splice(idx,1);saveGame();refreshHouse();refreshLife();showFloatText('💰 +'+fmt(revenue),true);}
   }});
 }
 
@@ -4392,12 +4392,12 @@ function buyBusiness(id){
   const b=BUSINESSES.find(x=>x.id===id);
   if(G.businesses.find(x=>x.id===id)){showToast('已拥有！');return;}
   if(G.cash<b.price){showToast('现金不足！');return;}
-  showModal({title:'加盟 '+b.name,content:'投入：'+fmt(b.price)+'\n预期月收入：'+fmt(b.monthlyIncome[0])+'~'+fmt(b.monthlyIncome[1])+'\n风险：'+(b.risk*100)+'%',success(res){if(res.confirm){G.cash-=b.price;G.businesses.push({id:b.id});if(!G.lifeEvents)G.lifeEvents=[];G.lifeEvents.push({month:G.totalMonths,icon:'🏪',title:'投资'+b.name,detail:'投入'+fmt(b.price)+'开设'+b.name,type:'invest'});G.monthlyTasks['invest_stock']=true;saveGame();refreshBusiness();refreshLife();showFloatText('🏪 开业大吉！',true);checkAchievements();}}});
+  showModal({title:'加盟 '+b.name,content:'投入：'+fmt(b.price)+'\n预期月收入：'+fmt(b.monthlyIncome[0])+'~'+fmt(b.monthlyIncome[1])+'\n风险：'+(b.risk*100)+'%',success(res){if(res.confirm){G.cash=clampCash(G.cash-b.price);G.businesses.push({id:b.id});if(!G.lifeEvents)G.lifeEvents=[];G.lifeEvents.push({month:G.totalMonths,icon:'🏪',title:'投资'+b.name,detail:'投入'+fmt(b.price)+'开设'+b.name,type:'invest'});G.monthlyTasks['invest_stock']=true;saveGame();refreshBusiness();refreshLife();showFloatText('🏪 开业大吉！',true);checkAchievements();}}});
 }
 function sellBusiness(id){
   const idx=G.businesses.findIndex(x=>x.id===id);if(idx===-1)return;
   const info=BUSINESSES.find(x=>x.id===id);const price=Math.round(info.price*0.6);
-  showModal({title:'转让 '+info.name,content:'转让回收：'+fmt(price)+'（原价60%）',success(res){if(res.confirm){G.cash+=price;G.businesses.splice(idx,1);saveGame();refreshBusiness();refreshLife();showFloatText('💰 +'+fmt(price),true);}}});
+  showModal({title:'转让 '+info.name,content:'转让回收：'+fmt(price)+'（原价60%）',success(res){if(res.confirm){G.cash=clampCash(G.cash+price);G.businesses.splice(idx,1);saveGame();refreshBusiness();refreshLife();showFloatText('💰 +'+fmt(price),true);}}});
 }
 
 // ========== 追加投入 ==========
@@ -4409,7 +4409,7 @@ function addBusinessInvestment(id){
   const cost=Math.round(b.price*0.5);
   showModal({title:'💸 追加投入 '+b.name,content:'投入：'+fmt(cost)+'\n\n效果：\n• 风险降低30%\n• 月收入提升20%\n• 最多追加3次（已'+addCount+'/3）\n\n是否确认追加？',success(res){if(res.confirm){
     if(G.cash<cost){showToast('现金不足！需'+fmt(cost));return;}
-    G.cash-=cost;
+    G.cash=clampCash(G.cash-cost);
     owned.additionalInvestment=addCount+1;
     owned.riskBoost=(owned.riskBoost||1)*0.7;
     owned.incomeBoost=(owned.incomeBoost||1)*1.2;
@@ -4450,7 +4450,7 @@ function investTech(id){
   if(G.techInvestments.find(x=>x.id===id)){showToast('已有进行中的投资！');return;}
   if(G.cash<t.minInvest){showToast('现金不足！');return;}
   showModal({title:'投资 '+t.name,content:'最低投入：'+fmt(t.minInvest)+'\n投资周期：'+t.returnMonths+'个月\n结果将在到期时揭晓\n\n💡 投资后可点击项目查看详情，处理各种突发状况',success(res){if(res.confirm){
-    G.cash-=t.minInvest;
+    G.cash=clampCash(G.cash-t.minInvest);
     G.techInvestments.push({id:t.id,investAmount:t.minInvest,monthsRemaining:t.returnMonths,
       morale:80,techProgress:20,funding:50,market:50,
       events:[],eventLog:[],resolved:[]});
@@ -4533,7 +4533,7 @@ function resolveProjectEvent(projectId,eventIdx,optionIdx){
   const evt=t.events[eventIdx];if(!evt||evt.resolved)return;
   const opt=evt.options[optionIdx];
   if(opt.cost&&G.cash<opt.cost){showToast('余额不足！');return;}
-  if(opt.cost)G.cash-=opt.cost;
+  if(opt.cost)G.cash=clampCash(G.cash-opt.cost);
   // Apply effects
   if(opt.effect){
     if(opt.effect.morale)t.morale=clamp(t.morale+(opt.effect.morale||0),0,100);
@@ -4715,7 +4715,7 @@ function refreshTasks(){
 }
 function claimTaskReward(){
   if(!MONTHLY_TASKS.every(t=>G.monthlyTasks[t.id])){showToast('还有未完成的任务！');return;}
-  G.cash+=1000;G.monthlyTasks={};
+  G.cash=clampCash(G.cash+1000);G.monthlyTasks={};
   showFloatText('💰 +¥1000',true);
   saveGame();refreshLife();refreshTasks();
 }
@@ -6629,7 +6629,7 @@ function startStudy(courseId){
   const course=COURSES.find(c=>c.id===courseId);
   if(!course||G.cash<course.cost){showToast('余额不足！');return;}
   if(G.learning.studying){showToast('正在学习中，完成后再报新课程');return;}
-  G.cash-=course.cost;
+  G.cash=clampCash(G.cash-course.cost);
   G.learning.studying=courseId;
   G.learning.studyEndMonth=G.totalMonths+course.months;
   showToast('📖 开始学习 '+course.name+'！'+course.months+'个月后完成');
@@ -7147,7 +7147,7 @@ async function selectPhoneOption(optIdx){
   }
   if(opt.fx&&opt.fx.houses){
     const price=1500000;
-    if(G.cash>=price){G.cash-=price;G.houses.push({id:'normal',own:true,loan:false,loanBalance:0,loanTerm:0,loanMonthly:0,marketValue:price});}
+    if(G.cash>=price){G.cash=clampCash(G.cash-price);G.houses.push({id:'normal',own:true,loan:false,loanBalance:0,loanTerm:0,loanMonthly:0,marketValue:price});}
   }
   // Move to next round or end
   if(opt.next===-1){
@@ -9186,7 +9186,7 @@ function showLifeSummary(){
 
 // ====== MONTHLY TASK SYSTEM ======
 function genMonthlyTasks(){var allTaskDefs=[{id:'income',title:'月收入达到¥5万',check:function(){return(G.lastMonthInc||0)>=50000},reward:{cash:5000,mood:10}},{id:'social',title:'本月结交3位新朋友',check:function(){return(G.newContacts||0)>=3},reward:{mood:15}},{id:'health',title:'保持健康≥80',check:function(){return G.health>=80},reward:{health:5}},{id:'invest',title:'投资收益超¥1万',check:function(){return(G.lastMonthInvInc||0)>=10000},reward:{cash:20000}},{id:'family',title:'陪伴家人（心情≥70）',check:function(){return G.mood>=70&&G.family&&G.family.spouse},reward:{prestige:5}},{id:'study',title:'提升任意属性到60',check:function(){return Math.max(G.iq||0,G.charm||0,G.strength||0)>=60},reward:{attrPts:1}}];G.monthlyTasks=[];var picked=[];var pool=allTaskDefs.slice();while(G.monthlyTasks.length<3&&pool.length>0){var idx=Math.floor(Math.random()*pool.length);var t=pool.splice(idx,1)[0];G.monthlyTasks.push({defId:t.id,title:t.title,progress:0,done:false,check:t.check,reward:t.reward})}G.newContacts=0;G.lastMonthInc=0;G.lastMonthInvInc=0}
-function checkMonthlyTasks(){if(!G.monthlyTasks)return;for(var i=0;i<G.monthlyTasks.length;i++){var t=G.monthlyTasks[i];if(t.done)continue;if(t.check()){t.done=true;var rw=t.reward;if(rw.cash){G.cash+=rw.cash;showToast('✓ '+t.title+' +¥'+rw.cash,'success')}if(rw.mood){G.mood=Math.min(100,G.mood+rw.mood);showToast('✓ '+t.title+' +心情'+rw.mood,'success')}if(rw.health){G.health=Math.min(100,G.health+rw.health)}if(rw.attrPts){G.attrPoints=(G.attrPoints||0)+rw.attrPts;showToast('✓ '+t.title+' +属性点'+rw.attrPts,'success')}if(rw.prestige&&G.family){G.family.prestige=(G.family.prestige||0)+rw.prestige}}}}
+function checkMonthlyTasks(){if(!G.monthlyTasks)return;for(var i=0;i<G.monthlyTasks.length;i++){var t=G.monthlyTasks[i];if(t.done)continue;if(t.check()){t.done=true;var rw=t.reward;if(rw.cash){G.cash=clampCash(G.cash+rw.cash);showToast('✓ '+t.title+' +¥'+rw.cash,'success')}if(rw.mood){G.mood=Math.min(100,G.mood+rw.mood);showToast('✓ '+t.title+' +心情'+rw.mood,'success')}if(rw.health){G.health=Math.min(100,G.health+rw.health)}if(rw.attrPts){G.attrPoints=(G.attrPoints||0)+rw.attrPts;showToast('✓ '+t.title+' +属性点'+rw.attrPts,'success')}if(rw.prestige&&G.family){G.family.prestige=(G.family.prestige||0)+rw.prestige}}}}
 function renderMonthlyTasks(){if(!G.monthlyTasks||!G.monthlyTasks.length)return '';var html='<div style="padding:12px"><h4>📋 月度任务</h4>';for(var i=0;i<G.monthlyTasks.length;i++){var t=G.monthlyTasks[i];html+='<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;opacity:'+(t.done?.5:1)+'"><span style="flex:1;font-size:13px">'+(t.done?'✓ ':'○ ')+t.title+'</span>'+(t.done?'<span style="color:#4CAF50;font-size:12px">已完成</span>':'')+'</div>'}html+='</div>';return html}
 
 
@@ -9232,7 +9232,7 @@ function educateChild(){
     confirmText:'投资教育',
     success:function(res){
       if(!res.confirm)return;
-      G.cash-=totalCost;
+      G.cash=clampCash(G.cash-totalCost);
       G._childEducationLevel=(G._childEducationLevel||0)+1;
       var totalIQBonus=0;
       var totalEQBonus=0;
@@ -9357,7 +9357,7 @@ function startStartup(){
         talent:clamp(G.IQ+G.EQ-150,10,100),
         market:randInt(20,80)
       };
-      G.cash-=cost;
+      G.cash=clampCash(G.cash-cost);
       G.jobIndex=0;
       G.monthsAtJob=0;
       if(!G.lifeEvents)G.lifeEvents=[];
@@ -9382,7 +9382,7 @@ function processStartup(){
     if(succeeded){
       var multiplier=1+Math.random()*(s.maxReturn-1);
       var payout=Math.round(s.invested*multiplier);
-      G.cash+=payout;
+      G.cash=clampCash(G.cash+payout);
       var profit=payout-s.invested;
       if(!G.lifeEvents)G.lifeEvents=[];
       G.lifeEvents.push({month:G.totalMonths,icon:'🎉',title:s.type+'创业成功！',detail:'获得回报'+fmt(payout)+'，净利润'+fmt(profit)+'！倍数：'+multiplier.toFixed(1)+'x',type:'career'});
@@ -9391,7 +9391,7 @@ function processStartup(){
     }else{
       var lossPct=randFloat(0.3,0.9);
       var recovered=Math.round(s.invested*(1-lossPct));
-      G.cash+=recovered;
+      G.cash=clampCash(G.cash+recovered);
       if(!G.lifeEvents)G.lifeEvents=[];
       G.lifeEvents.push({month:G.totalMonths,icon:'💔',title:s.type+'创业失败',detail:'亏损'+(lossPct*100).toFixed(0)+'%，仅收回'+fmt(recovered),type:'career'});
       showModal({title:'💔 创业失败',content:s.type+'公司未能成功。\n投入：'+fmt(s.invested)+'\n收回：'+fmt(recovered)+'\n亏损：'+(lossPct*100).toFixed(0)+'%\n\n不要灰心，创业本身就是一场修行。',showCancel:false,confirmText:'吸取教训'});
@@ -9589,7 +9589,7 @@ function resolveChoiceEvent(optIdx){
     var succeeded=Math.random()<opt.chance;
     var outcome=succeeded?opt.success:opt.fail;
     if(outcome){
-      if(outcome.cash)G.cash+=outcome.cash;
+      if(outcome.cash)G.cash=clampCash(G.cash+outcome.cash);
       if(outcome.mood)G.mood=clamp(G.mood+outcome.mood,0,200);
     }
     if(!G.lifeEvents)G.lifeEvents=[];
@@ -9597,7 +9597,7 @@ function resolveChoiceEvent(optIdx){
     showModal({title:succeeded?'✅ 成功':'❌ 未成功',content:succeeded?(opt.resultWin||'事情顺利解决！'):(opt.resultFail||'这次没有成功...'),showCancel:false,confirmText:'知道了'});
   }else{
     if(opt.effect){
-      if(opt.effect.cash)G.cash+=opt.effect.cash;
+      if(opt.effect.cash)G.cash=clampCash(G.cash+opt.effect.cash);
       if(opt.effect.mood)G.mood=clamp(G.mood+opt.effect.mood,0,200);
       if(opt.effect.IQ)G.IQ=clamp(G.IQ+opt.effect.IQ,0,200);
       if(opt.effect.EQ)G.EQ=clamp(G.EQ+opt.effect.EQ,0,200);
@@ -10010,7 +10010,7 @@ function buyPet(pid){
   var p=PET_SHOP.find(function(x){return x.id===pid;});if(!p)return;
   if(G.pets.some(function(pt){return pt.id===pid;})){showToast('你已经领养过这只宠物了！');return;}
   if(G.cash<p.price){showToast('余额不足！');return;}
-  G.cash-=p.price;
+  G.cash=clampCash(G.cash-p.price);
   var pet={id:p.id,name:p.name,emoji:p.emoji,rarity:p.rarity,
     hunger:80,hygiene:80,mood:80,energy:80,intimacy:20,
     adoptedMonth:G.totalMonths,lastInteract:G.totalMonths,tricks:[false,false,false]};
@@ -10022,7 +10022,7 @@ function buyPet(pid){
 function buyPetFood(qty){
   var cost=qty===1?200:qty===5?900:qty===20?3500:200*qty;
   if(G.cash<cost){showToast('余额不足！');return;}
-  G.cash-=cost;
+  G.cash=clampCash(G.cash-cost);
   G.petFood=(G.petFood||0)+qty;
   saveGame();renderPetShop();updatePetBadge();
   showToast('购买狗粮 x'+qty+'，花费¥'+cost);
@@ -10260,7 +10260,7 @@ function petPlayTreasure(id){
   var result={icon:'',text:''};
   if(r<0.25){
     var money=Math.floor(Math.random()*1500)+500;
-    G.cash+=money;result.icon='💰';result.text='发现了 ¥'+money+' 现金！';
+    G.cash=clampCash(G.cash+money);result.icon='💰';result.text='发现了 ¥'+money+' 现金！';
   }else if(r<0.45){
     var food=Math.floor(Math.random()*5)+2;
     G.petFood=(G.petFood||0)+food;result.icon='🍖';result.text='找到 '+food+' 袋狗粮！';
@@ -10327,7 +10327,7 @@ function petFeed(id){
   if(G.petFood>0){G.petFood--;}
   else{
     if(G.cash<200){showToast('余额不足，无法自动购买狗粮！');return;}
-    G.cash-=200;showToast('自动购买狗粮 -¥200');
+    G.cash=clampCash(G.cash-200);showToast('自动购买狗粮 -¥200');
   }
   pet.hunger=Math.min(100,pet.hunger+25);
   pet.mood=Math.min(100,pet.mood+5);
@@ -10351,7 +10351,7 @@ function petPlay(id){
 function petWash(id){
   var pet=G.pets.find(function(p){return p.id===id;});if(!pet)return;
   if(G.cash<50){showToast('余额不足¥50！');return;}
-  G.cash-=50;
+  G.cash=clampCash(G.cash-50);
   pet.hygiene=100;
   pet.mood=Math.min(100,pet.mood+5);
   pet.lastInteract=G.totalMonths;
@@ -10437,17 +10437,17 @@ function petRandomEvent(){
     var giveupBtn=document.getElementById('petLoseGiveupBtn');
     var findBtn=document.getElementById('petLoseFindBtn');
     if(giveupBtn)giveupBtn.onclick=function(){G.pets=G.pets.filter(function(p){return p.id!==pet.id;});saveGame();var mo=this.closest('.modal-overlay');if(mo)_petCloseModal(mo);showToast(pet.name+'离开了你...');updatePetBadge();renderPetDetail(G.pets[0]||null);};
-    if(findBtn)findBtn.onclick=function(){if(G.cash<500){showToast('余额不足¥500');return;}G.cash-=500;pet.intimacy=Math.min(100,pet.intimacy+5);pet.lastInteract=G.totalMonths;var mo=this.closest('.modal-overlay');if(mo)_petCloseModal(mo);showToast(pet.name+'回来了！亲密度+5');saveGame();renderPetDetail(pet);updatePetBadge();};
+    if(findBtn)findBtn.onclick=function(){if(G.cash<500){showToast('余额不足¥500');return;}G.cash=clampCash(G.cash-500);pet.intimacy=Math.min(100,pet.intimacy+5);pet.lastInteract=G.totalMonths;var mo=this.closest('.modal-overlay');if(mo)_petCloseModal(mo);showToast(pet.name+'回来了！亲密度+5');saveGame();renderPetDetail(pet);updatePetBadge();};
   }else if(r<0.07){
     var gold=Math.floor(Math.random()*2000)+300;
-    G.cash+=gold;
+    G.cash=clampCash(G.cash+gold);
     G.events.push({text:'✨ '+pet.name+'发现了宝藏！+¥'+gold,type:'good',source:'pet'});
   }else if(r<0.10){
     _petShowModal('🤒 '+pet.name+'生病了！','<div style="line-height:1.8">你的'+pet.emoji+' '+pet.name+'看上去很不舒服...<br>需要花费¥300带它去看医生<br><br><small style="color:#999">（不治疗会损失亲密度）</small></div>','<button class="btn btn-outline" id="petSickIgnoreBtn">不管它</button><button class="btn btn-success" id="petSickHealBtn">治疗 ¥300</button>');
     var ignoreBtn=document.getElementById('petSickIgnoreBtn');
     var healBtn=document.getElementById('petSickHealBtn');
     if(ignoreBtn)ignoreBtn.onclick=function(){pet.intimacy=Math.max(0,pet.intimacy-10);saveGame();var mo=this.closest('.modal-overlay');if(mo)_petCloseModal(mo);showToast(pet.name+'很难过...');renderPetDetail(pet);updatePetBadge();};
-    if(healBtn)healBtn.onclick=function(){if(G.cash<300){showToast('余额不足¥300');return;}G.cash-=300;pet.intimacy=Math.min(100,pet.intimacy+5);pet.mood=Math.min(100,pet.mood+10);saveGame();var mo=this.closest('.modal-overlay');if(mo)_petCloseModal(mo);showToast(''+pet.name+'康复了！');renderPetDetail(pet);updatePetBadge();};
+    if(healBtn)healBtn.onclick=function(){if(G.cash<300){showToast('余额不足¥300');return;}G.cash=clampCash(G.cash-300);pet.intimacy=Math.min(100,pet.intimacy+5);pet.mood=Math.min(100,pet.mood+10);saveGame();var mo=this.closest('.modal-overlay');if(mo)_petCloseModal(mo);showToast(''+pet.name+'康复了！');renderPetDetail(pet);updatePetBadge();};
   }else if(r<0.13){
     var foodReward=Math.floor(Math.random()*4)+2;
     G.petFood=(G.petFood||0)+foodReward;
@@ -10559,7 +10559,7 @@ function processSystemLinkages(){
       if(!G._milestones)G._milestones={};G._milestones.childGaokao=(G._milestones.childGaokao||0)+1;
       var gaokaoResult=Math.random();
       if(gaokaoResult>0.6){
-        var bonus=200000;G.cash+=bonus;
+        var bonus=200000;G.cash=clampCash(G.cash+bonus);
         evts.push({text:'🎓 子女考上大学！双喜临门，资金+'+fmt(bonus),type:'good',source:'ai-link'});
         G.family.prestige=(G.family.prestige||0)+2;
         if((G.socialContacts||[]).length>0){
@@ -11585,7 +11585,7 @@ function applyCareerBranch(branchId){
   if(!branch)return;
   if(!G.careerBranches)G.careerBranches=[];
   G.careerBranches.push(branchId);
-  if(branch.reqCash)G.cash-=branch.reqCash;
+  if(branch.reqCash)G.cash=clampCash(G.cash-branch.reqCash);
   G.salaryBonus=(G.salaryBonus||0)+(branch.salaryBoost-1);
   if(!G.lifeEvents)G.lifeEvents=[];
   G.lifeEvents.push({month:G.totalMonths,icon:'🎯',title:'转型为'+branch.name,detail:branch.desc,type:'career'});
@@ -11639,7 +11639,7 @@ function applyNarrativeChoice(evtId,optIdx){
   var opt=evt.options[optIdx];
   if(!opt)return;
   // Apply effects
-  if(opt.effect.cash)G.cash+=opt.effect.cash;
+  if(opt.effect.cash)G.cash=clampCash(G.cash+opt.effect.cash);
   if(opt.effect.health)G.health=clamp(G.health+opt.effect.health,0,200);
   if(opt.effect.mood)G.mood=clamp(G.mood+opt.effect.mood,0,200);
   if(opt.effect.IQ)G.IQ=clamp(G.IQ+opt.effect.IQ,0,200);
@@ -11660,7 +11660,7 @@ function applyNarrativeChoice(evtId,optIdx){
 // === socialGathering ===
 function socialGathering(){
   if(G.cash<1500){showToast('现金不足！');return;}
-  G.cash-=1500;G.EQ=clamp(G.EQ+2,0,200);G.mood=clamp(G.mood+4,0,200);
+  G.cash=clampCash(G.cash-1500);G.EQ=clamp(G.EQ+2,0,200);G.mood=clamp(G.mood+4,0,200);
   showFloatText('💬 EQ+2',true);showFloatText('😊 Mood+4',true);showFloatText('💰 -¥1500',false);
   G.monthlyTasks['social']=true;
   saveGame();refreshAll();
@@ -11669,7 +11669,7 @@ function socialGathering(){
 // === coffeeSocial ===
 function coffeeSocial(){
   if(G.cash<500){showToast('现金不足！');return;}
-  G.cash-=500;G.EQ=clamp(G.EQ+1,0,200);G.IQ=clamp(G.IQ+1,0,200);G.mood=clamp(G.mood+2,0,200);
+  G.cash=clampCash(G.cash-500);G.EQ=clamp(G.EQ+1,0,200);G.IQ=clamp(G.IQ+1,0,200);G.mood=clamp(G.mood+2,0,200);
   showFloatText('☕ EQ+1 IQ+1',true);showFloatText('💰 -¥500',false);
   // Small chance to meet someone new
   if(Math.random()<0.3&&G.socialContacts){
@@ -12380,7 +12380,7 @@ async function triggerScheduleEvent(event){
       showToast('🏖️ 年假不足，'+needed+'天按事假处理（扣工资）');
       // Deduct salary for unpaid leave days
       const dailySalary=(G.salary||5000)/22;
-      G.cash-=dailySalary*needed;
+      G.cash=clampCash(G.cash-dailySalary*needed);
     }
   }
   // Update relationship for any NPC
