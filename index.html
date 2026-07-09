@@ -2850,6 +2850,7 @@ function closeForbes(){
 // Button debounce
 var _nextMonthDebounce=false;
 function debouncedNextMonth(){
+  console.log('debouncedNextMonth called, debounce='+_nextMonthDebounce+', gameOver='+G.gameOver+', careerSelectPending='+G._careerSelectPending);
   if(_nextMonthDebounce)return;
   _nextMonthDebounce=true;
   nextMonth();
@@ -2881,7 +2882,7 @@ async function nextMonth(){
 
     const _faModal=document.createElement('div');
     _faModal.id='forceAdvanceModal';
-    _faModal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s';
+    _faModal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s;pointer-events:auto;';
     _faModal.innerHTML=`
       <div style="background:#fff;border-radius:16px;padding:24px;max-width:320px;width:85%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2)">
         <div style="font-size:40px;margin-bottom:12px">⚠️</div>
