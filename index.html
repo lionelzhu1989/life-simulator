@@ -129,8 +129,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 .ai-float-text{font-size:12px;font-weight:600;}
 .ai-float-close{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#999;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:1;}
 @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
-.guide-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:4000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
-.guide-overlay.show{opacity:1;pointer-events:auto;}
+.guide-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:4000;display:none;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+.guide-overlay.show{display:flex;opacity:1;pointer-events:auto;}
 .guide-box{background:#fff;border-radius:16px;padding:28px 24px;text-align:center;max-width:300px;transform:scale(0.8);transition:transform .3s;}
 .guide-overlay.show .guide-box{transform:scale(1);}
 .guide-icon{font-size:48px;margin-bottom:12px;}
@@ -386,7 +386,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 @keyframes toast-out{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-10px)}}
 
 /* ====== V2: Onboarding Tutorial ====== */
-.ob-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:6000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease}
+.ob-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:6000;display:none;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease;pointer-events:none;}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .ob-card{background:#fff;border-radius:16px;padding:28px 24px;width:100%;max-width:320px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
 .ob-progress{display:flex;gap:6px;justify-content:center;margin-bottom:20px}
@@ -588,14 +588,12 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 .save-indicator.show{opacity:1;animation:saveFlash .8s ease;}
 @keyframes saveFlash{0%{transform:scale(0.5);opacity:0;}50%{transform:scale(1.3);opacity:1;}100%{transform:scale(1);opacity:0;}}
 /* ====== V2: Event Choice Modal ====== */
-.choice-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:4500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
 /* ====== V2: News Banner ====== */
 .news-banner{padding:12px 14px;border-radius:10px;margin-bottom:12px;font-size:12px;line-height:1.5;position:relative;overflow:hidden;word-break:break-word;}
 /* ====== V2: Tier Unlocks ====== */
 .tier-banner{padding:16px;border-radius:12px;margin-bottom:12px;text-align:center;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;animation:tierPulse 2s ease-in-out;}
 @keyframes tierPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
 /* ====== V2: Forbes Celebration ====== */
-.forbes-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:6000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .5s;}
 @keyframes forbesZoom{0%{transform:scale(0) rotate(-10deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
 @keyframes forbesFade{0%{opacity:0;transform:translateY(20px);}100%{opacity:1;transform:translateY(0);}}
 @keyframes confettiFall{0%{opacity:1;transform:translateY(-100vh) rotate(0);}100%{opacity:0;transform:translateY(100vh) rotate(720deg);}}
@@ -668,8 +666,6 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 /* Recent Messages Card */
 .msg-preview-item{display:flex;align-items:center;gap:10px;padding:12px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;min-height:48px;}
 /* ====== Money Interaction System ====== */
-.money-decision-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
-/* ===== 玩法指南 ===== */
 .guide-header{background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;padding:20px;text-align:center;flex-shrink:0;}
 .guide-header h2{font-size:20px;margin-bottom:6px;}
 .guide-header p{font-size:13px;opacity:0.8;}
@@ -720,7 +716,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 .group-select-modal-overlay.show{display:flex;}
 
 /* ===== Tutorial Overlay ===== */
-.tut-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);z-index:10001;display:flex;align-items:center;justify-content:center;animation:tutFadeIn .25s ease;}
+.tut-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);z-index:10001;display:none;align-items:center;justify-content:center;animation:tutFadeIn .25s ease;pointer-events:none;}
 @keyframes tutFadeIn{from{opacity:0}to{opacity:1}}
 .tut-card{background:#fff;border-radius:18px;padding:28px 24px 20px;max-width:340px;width:85%;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.18);animation:tutSlideUp .3s ease;}
 @keyframes tutSlideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
@@ -2315,7 +2311,7 @@ function switchTab(name){
   const tabs=['life','work','invest','pet','more','task','phone'];
   document.querySelectorAll('.tab-item').forEach((t,i)=>t.classList.toggle('active',tabs[i]===name));
   refreshPage(name);
-  _tut_checkAutoAdvance();
+  // _tut_checkAutoAdvance(); // 禁用tutorial
 }
 function switchInvestTab(name){
   document.querySelectorAll('.invest-tab').forEach(t=>t.classList.remove('active'));
@@ -2327,11 +2323,11 @@ function switchInvestTab(name){
 
 // ========== 初始化 ==========
 function startGame(){
-  // 首次进入时显示新手引导
-  if(!localStorage.getItem('ob_done_v2') && typeof startOnboarding==='function'){
-    startOnboarding();
-    return;
-  }
+  // 修复：禁用新手引导，直接进入游戏
+  // if(!localStorage.getItem('ob_done_v2') && typeof startOnboarding==='function'){
+  //   startOnboarding();
+  //   return;
+  // }
   if(loadGame()&&!G.gameOver){
     migrateSave();
     // V6: 新字段迁移（旧存档兼容）
@@ -2776,7 +2772,14 @@ function calcPassiveIncome(){
 function renderEvents(){
   const area=document.getElementById('eventArea');
   if(!G.events||G.events.length===0){area.innerHTML='';return;}
-  area.innerHTML=G.events.map(e=>'<div class="event-banner event-'+e.type+'">'+e.text+'</div>').join('');
+  area.innerHTML=G.events.map((e,i)=>'<div class="event-banner event-'+e.type+'" onclick="dismissEvent('+i+')" style="cursor:pointer;">'+e.text+' <span style="float:right;opacity:0.6;">✕</span></div>').join('');
+}
+function dismissEvent(idx){
+  if(G.events&&G.events.length>idx){
+    G.events.splice(idx,1);
+    saveGame();
+    renderEvents();
+  }
 }
 
 // ========== V2: Tier Banner ==========
@@ -3436,7 +3439,7 @@ async function generateWorkScenario(){
   try{
     const resp=await fetch('https://token-plan-cn.xiaomimimo.com/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','api-key':'tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0'},
       body:JSON.stringify({model:'xiaomi/mimo-v2.5',messages:[{role:'user',content:prompt}],temperature:0.9,max_tokens:500})
     });
     if(resp.ok){
@@ -4894,11 +4897,11 @@ function closeGuide(){
   saveGame();
 }
 function advanceGuide(){
-  // Auto-show guide on first 3 months if not yet seen
-  if(G.guideStep===0){
-    G.guideStep=1;
-    openGuide();
-  }
+  // 修复：禁用自动弹出guide，避免阻止用户交互
+  // if(G.guideStep===0){
+  //   G.guideStep=1;
+  //   openGuide();
+  // }
 }
 
 // ========== AI浮窗 ==========
@@ -6475,7 +6478,7 @@ async function _generateNPCAIReply(npcId, playerMsg, chatHist){
   try{
     const resp=await fetch('https://token-plan-cn.xiaomimimo.com/v1/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','api-key':'tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0'},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0'},
       body:JSON.stringify({model:'xiaomi/mimo-v2.5',messages:[{role:'user',content:prompt}],temperature:0.92,max_tokens:500})
     });
     if(resp.ok){
@@ -7069,7 +7072,7 @@ async function _aiFillThread(thread){
     try{
       const resp=await fetch('https://token-plan-cn.xiaomimimo.com/v1/chat/completions',{
         method:'POST',
-        headers:{'Content-Type':'application/json','api-key':'tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0'},
+        headers:{'Content-Type':'application/json','Authorization':'Bearer tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0'},
         body:JSON.stringify({model:'xiaomi/mimo-v2.5',messages:[{role:'user',content:prompt}],temperature:0.92,max_tokens:500})
       });
       if(resp.ok){
@@ -7557,7 +7560,7 @@ ${p.name}的家人/朋友是${relation}。玩家${gameState.age}岁，${gameStat
       const resp=await fetch(AI_CHAT_CONFIG.apiUrl,{
         method:'POST',
         headers:{
-          'api-key':'tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0',
+          'Authorization':'Bearer tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0',
           'Content-Type':'application/json'
         },
         body:JSON.stringify({
@@ -10691,7 +10694,7 @@ async function generateEncounterAIResponse(sceneKey, npcName, choiceText, choice
       var resp = await fetch(AI_CHAT_CONFIG.endpoint, {
         method:'POST',
         headers:{
-          'api-key':'tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0','Content-Type':'application/json'},
+          'Authorization':'Bearer tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0','Content-Type':'application/json'},
         body:JSON.stringify({
           model: AI_CHAT_CONFIG.model,
           messages:[
@@ -10882,7 +10885,7 @@ async function generateFriendInteraction(friend){
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'api-key': 'tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0'
+        'Authorization': 'Bearer tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0'
       },
       body: JSON.stringify({
         model: 'xiaomi/mimo-v2.5',
@@ -11786,7 +11789,7 @@ async function sendAIChat(){
     const resp=await fetch(AI_CHAT_CONFIG.apiUrl,{
       method:'POST',
       headers:{
-          'api-key':'tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0',
+          'Authorization':'Bearer tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0',
         'Content-Type':'application/json'
       },
       body:JSON.stringify({
@@ -11983,7 +11986,7 @@ ${threadContext}${historyText?'\n历史消息：\n'+historyText:''}
       const resp=await fetch(AI_CHAT_CONFIG.apiUrl,{
         method:'POST',
         headers:{
-          'api-key':'tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0','Content-Type':'application/json'},
+          'Authorization':'Bearer tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0','Content-Type':'application/json'},
         body:JSON.stringify({
           model:AI_CHAT_CONFIG.model,
           messages:[{role:'system',content:systemPrompt},{role:'user',content:'## 玩家选择\n'+playerChoice+'\n\n（请根据上面的历史消息记忆，给出像真人一样的自然回复。）'}],
@@ -12472,7 +12475,7 @@ async function generateScheduleSceneAI(event,npcId,npcName,npcTraits,relType,act
     const resp=await fetch(AI_ENGINE.useProxy?AI_ENGINE.proxyUrl:AI_ENGINE.directUrl,{
       method:'POST',
       headers:{
-          'api-key':'tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0','Content-Type':'application/json'},
+          'Authorization':'Bearer tp-chy2q7xt8dofqyzdqb4bzbcz5g9bmmxyhzm7dcp665wl2vn0','Content-Type':'application/json'},
       body:JSON.stringify({model:AI_ENGINE.model,messages:[{role:'user',content:prompt}],temperature:0.92,max_tokens:500}),
       signal:_scAbort.signal
     });
