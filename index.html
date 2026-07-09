@@ -2155,7 +2155,7 @@ function defaultState(){
   const legacy=loadLegacy();
   let cash=100000,hp=100,mood=100,iq=100,eq=100;
   legacy.upgrades.forEach(uid=>{
-    const u=LEGACY_UPGRADES.find(x=>x.id===uid);
+    const u=LEGACY_UPGRADES.find(x=>x.id===String(uid));
     if(!u)return;
     if(u.effect.cash)cash+=u.effect.cash;
     if(u.effect.IQ)iq+=u.effect.IQ;
@@ -3867,7 +3867,7 @@ function renderLuxuryArea(){
   }
 }
 function buyLuxury(id){
-  const item=LUXURY_ITEMS.find(x=>x.id===id);
+  const item=LUXURY_ITEMS.find(x=>x.id===String(id));
   if(!item||G.luxuryItems.includes(item.id))return;
   if(G.cash<item.price){showToast('现金不足！');return;}
   showModal({title:'购买 '+item.name,content:'价格：'+fmt(item.price)+'\n\n'+item.desc+'\n\n确定购买吗？',success(res){
@@ -4390,21 +4390,21 @@ function refreshBusiness(){
   document.getElementById('myBusinesses').innerHTML=myHtml;
 }
 function buyBusiness(id){
-  const b=BUSINESSES.find(x=>x.id===id);
-  if(G.businesses.find(x=>x.id===id)){showToast('已拥有！');return;}
+  const b=BUSINESSES.find(x=>x.id===String(id));
+  if(G.businesses.find(x=>x.id===String(id))){showToast('已拥有！');return;}
   if(G.cash<b.price){showToast('现金不足！');return;}
   showModal({title:'加盟 '+b.name,content:'投入：'+fmt(b.price)+'\n预期月收入：'+fmt(b.monthlyIncome[0])+'~'+fmt(b.monthlyIncome[1])+'\n风险：'+(b.risk*100)+'%',success(res){if(res.confirm){G.cash=clampCash(G.cash-b.price);G.businesses.push({id:b.id});if(!G.lifeEvents)G.lifeEvents=[];G.lifeEvents.push({month:G.totalMonths,icon:'🏪',title:'投资'+b.name,detail:'投入'+fmt(b.price)+'开设'+b.name,type:'invest'});G.monthlyTasks['invest_stock']=true;saveGame();refreshBusiness();refreshLife();showFloatText('🏪 开业大吉！',true);checkAchievements();}}});
 }
 function sellBusiness(id){
-  const idx=G.businesses.findIndex(x=>x.id===id);if(idx===-1)return;
-  const info=BUSINESSES.find(x=>x.id===id);const price=Math.round(info.price*0.6);
+  const idx=G.businesses.findIndex(x=>x.id===String(id));if(idx===-1)return;
+  const info=BUSINESSES.find(x=>x.id===String(id));const price=Math.round(info.price*0.6);
   showModal({title:'转让 '+info.name,content:'转让回收：'+fmt(price)+'（原价60%）',success(res){if(res.confirm){G.cash=clampCash(G.cash+price);G.businesses.splice(idx,1);saveGame();refreshBusiness();refreshLife();showFloatText('💰 +'+fmt(price),true);}}});
 }
 
 // ========== 追加投入 ==========
 function addBusinessInvestment(id){
-  const b=BUSINESSES.find(x=>x.id===id);if(!b)return;
-  const owned=G.businesses.find(x=>x.id===id);if(!owned)return;
+  const b=BUSINESSES.find(x=>x.id===String(id));if(!b)return;
+  const owned=G.businesses.find(x=>x.id===String(id));if(!owned)return;
   const addCount=owned.additionalInvestment||0;
   if(addCount>=3)return;
   const cost=Math.round(b.price*0.5);
@@ -4447,8 +4447,8 @@ function refreshTech(){
   document.getElementById('myTechList').innerHTML=myHtml;
 }
 function investTech(id){
-  const t=TECH_INVESTMENTS.find(x=>x.id===id);
-  if(G.techInvestments.find(x=>x.id===id)){showToast('已有进行中的投资！');return;}
+  const t=TECH_INVESTMENTS.find(x=>x.id===String(id));
+  if(G.techInvestments.find(x=>x.id===String(id))){showToast('已有进行中的投资！');return;}
   if(G.cash<t.minInvest){showToast('现金不足！');return;}
   showModal({title:'投资 '+t.name,content:'最低投入：'+fmt(t.minInvest)+'\n投资周期：'+t.returnMonths+'个月\n结果将在到期时揭晓\n\n💡 投资后可点击项目查看详情，处理各种突发状况',success(res){if(res.confirm){
     G.cash=clampCash(G.cash-t.minInvest);
@@ -4615,7 +4615,7 @@ function checkAchievements(){
   for(const[id,unlocked]of Object.entries(checks)){
     if(unlocked&&!G.achievements.includes(id)){
       G.achievements.push(id);
-      const def=ACHIEVEMENTS_DEF.find(a=>a.id===id);
+      const def=ACHIEVEMENTS_DEF.find(a=>a.id===String(id));
       if(def)showToast('🏅 成就解锁：'+def.icon+' '+def.name);
     }
   }
@@ -4754,7 +4754,7 @@ function showRebirthPanel(){
 }
 function closeRebirthPanel(){document.getElementById('rebirthPanel').classList.remove('show');}
 function buyLegacy(id){
-  const u=LEGACY_UPGRADES.find(x=>x.id===id);if(!u)return;
+  const u=LEGACY_UPGRADES.find(x=>x.id===String(id));if(!u)return;
   if(G.legacyUpgrades.includes(id)){showToast('已拥有！');return;}
   if((G.legacyPoints||0)<u.cost){showToast('LP不足！');return;}
   G.legacyPoints-=u.cost;G.legacyUpgrades.push(id);
@@ -4843,7 +4843,7 @@ function generateSharePoster(){
   if(G.achievements.length>0){
     ctx.fillStyle='#f1c40f';ctx.font='bold 28px sans-serif';ctx.fillText('🏅 成就',375,770);
     ctx.font='24px sans-serif';ctx.fillStyle='#fff';
-    const achText=G.achievements.slice(0,8).map(id=>{const a=ACHIEVEMENTS_DEF.find(x=>x.id===id);return a?a.icon+a.name:'';}).join('  ');
+    const achText=G.achievements.slice(0,8).map(id=>{const a=ACHIEVEMENTS_DEF.find(x=>x.id===String(id));return a?a.icon+a.name:'';}).join('  ');
     ctx.fillText(achText,375,810);
   }
   ctx.fillStyle='#f1c40f';ctx.font='bold 32px sans-serif';
@@ -6345,7 +6345,7 @@ function renderContacts(){
         rel=getRelationship(npcId);
         relDef=RELATION_TYPES[rel.type]||RELATION_TYPES.stranger;
       }else{
-        var c=(G.socialContacts||[]).find(c=>c.id===npcId);
+        var c=(G.socialContacts||[]).find(c=>c.id===String(npcId));
         if(!c)return;
         p=NPC_PERSONALITIES[npcId];
         if(!p)return;
@@ -7250,7 +7250,7 @@ function showChatProfile(){
   else if(G._openProactiveNpc){npcName=G._openProactiveNpc;initSocialContacts();const p=NPC_PERSONALITIES[G._openProactiveNpc];if(p)npcName=p.name;}
   initSocialContacts();
   let isContact=false;var friendLevel=0;var note='';
-  if(npcId){const existing=(G.socialContacts||[]).find(c=>c.id===npcId);if(existing){isContact=true;friendLevel=existing.friendLevel||0;}if(G.notes&&G.notes[npcId])note=G.notes[npcId];}
+  if(npcId){const existing=(G.socialContacts||[]).find(c=>c.id===String(npcId));if(existing){isContact=true;friendLevel=existing.friendLevel||0;}if(G.notes&&G.notes[npcId])note=G.notes[npcId];}
   const labels=['陌生人','认识','熟悉','好友'];
   const relation=isCoreNpc?'核心人物':(isContact?labels[friendLevel]||'认识':'未加入通讯录');
   const p = NPC_PERSONALITIES[npcId] || {};
@@ -7762,7 +7762,7 @@ function processChatEffects(reply,npcId){
     const existing=(G.socialContacts||[]).find(c=>c.name===newName);
     if(!existing){
       // Create a new social contact introduced by this NPC
-      const introducer=(G.socialContacts||[]).find(c=>c.id===npcId);
+      const introducer=(G.socialContacts||[]).find(c=>c.id===String(npcId));
       const categories=['classmate','colleague','gymBuddy','partyFriend','neighbor'];
       const sceneKey=categories[Math.floor(Math.random()*categories.length)];
       const template=MEETABLE_NPCS[sceneKey]||{};
@@ -8371,7 +8371,7 @@ function _htmlPostPanel(){return '<div class="moments-panel" id="momentsPanel"><
 
 function likeMoment(id){
   if(!G.phone)return;
-  const m=G.phone.moments.find(x=>x.id===id);if(!m)return;
+  const m=G.phone.moments.find(x=>x.id===String(id));if(!m)return;
   m.liked=!m.liked;
   if(m.liked)G.EQ=clamp(G.EQ+1,0,200);
   renderMoments();saveGame();refreshLife();
@@ -8380,7 +8380,7 @@ function commentMoment(id){
   if(!G.phone)return;
   // 查找对应的朋友圈数据
   const moments=G.phone.moments||[];
-  const m=moments.find(x=>x.id===id);
+  const m=moments.find(x=>x.id===String(id));
   // 如果有评论输入框，直接显示
   const wrap=document.getElementById('moment-input-'+id);
   if(wrap){
@@ -8409,7 +8409,7 @@ function generateNotifications(){
   if(!G.phone)return;
   G.achievements.forEach(id=>{
     const key='ach_n_'+id;if(G.phone.flags[key])return;
-    const def=ACHIEVEMENTS_DEF.find(a=>a.id===id);
+    const def=ACHIEVEMENTS_DEF.find(a=>a.id===String(id));
     if(def){addNotification('achievement','成就解锁：'+def.icon+' '+def.name);G.phone.flags[key]=true;}
   });
 }
@@ -11683,8 +11683,8 @@ function coffeeSocial(){
 
 // === openBusinessDetail ===
 function openBusinessDetail(id){
-  const b=BUSINESSES.find(x=>x.id===id);
-  const owned=G.businesses.find(x=>x.id===id);
+  const b=BUSINESSES.find(x=>x.id===String(id));
+  const owned=G.businesses.find(x=>x.id===String(id));
   if(!b||!owned)return;
   const profit=(owned.totalIncome||0)-(owned.totalLoss||0);
   const avgMonthly=owned.monthsOwned>0?Math.round((owned.totalIncome||0)/owned.monthsOwned):0;
@@ -12106,7 +12106,7 @@ function _npcInteractWithRecentMoments(){
 // === likeAIGMoment ===
 function likeAIGMoment(id){
   if(!G.phone||!G.phone.aiMoments)return;
-  const m=G.phone.aiMoments.find(x=>x.id===id);if(!m)return;
+  const m=G.phone.aiMoments.find(x=>x.id===String(id));if(!m)return;
   m.playerLiked=!m.playerLiked;
   if(m.playerLiked){
     G.EQ=clamp(G.EQ+10,0,200);
@@ -12145,9 +12145,9 @@ function showMomentInput(id){
 function submitMomentComment(id){
   if(!G.phone)return;
   // Search all moment sources by id
-  let m=G.phone.aiMoments?G.phone.aiMoments.find(x=>x.id===id):null;
+  let m=G.phone.aiMoments?G.phone.aiMoments.find(x=>x.id===String(id)):null;
   let isTemplate=false;
-  if(!m){m=(G.phone.moments||[]).find(x=>x.id===id);isTemplate=true;}
+  if(!m){m=(G.phone.moments||[]).find(x=>x.id===String(id));isTemplate=true;}
   if(!m){showToast('找不到这条朋友圈');return;}
   const tf=document.getElementById('moment-tf-'+id);
   const text=tf?tf.value.trim():'';
@@ -12238,7 +12238,7 @@ ${chosen.map(id=>{const p=NPC_PERSONALITIES[id];return p?`- ${id}(${p.name}): �
 // === askAboutMoment ===
 function askAboutMoment(id){
   if(!G.phone||!G.phone.aiMoments)return;
-  const m=G.phone.aiMoments.find(x=>x.id===id);if(!m)return;
+  const m=G.phone.aiMoments.find(x=>x.id===String(id));if(!m)return;
   // Open chat with the NPC who posted, referencing their post
   const npcId=m.npcId;
   const npc=NPCS[npcId];
@@ -12254,7 +12254,7 @@ function markNotifRead(id){
   if(!G.phone||!G.phone.notifications)return;
   let n;
   if(id!==undefined&&id!==null){
-    n=G.phone.notifications.find(x=>x.id===id);
+    n=G.phone.notifications.find(x=>x.id===String(id));
   }else{
     n=G.phone.notifications.find(x=>!x.read);
   }
@@ -12734,7 +12734,7 @@ function checkRelationshipProgression(npcId){
   const rel=getRelationship(npcId);
   // 家人类型不参与升级检测
   if(rel.type==='family')return;
-  const contact=(G.socialContacts||[]).find(c=>c.id===npcId);
+  const contact=(G.socialContacts||[]).find(c=>c.id===String(npcId));
   if(!contact)return;
   const name=contact.name;
   // Progression rules based on intimacy + trust + chatCount
