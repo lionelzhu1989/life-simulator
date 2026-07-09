@@ -6389,7 +6389,7 @@ async function openProactiveChat(npcId){
     // Mark chat history as read
     if(G.phone.chatHistory&&G.phone.chatHistory[npcId]){
       const hist=G.phone.chatHistory[npcId];
-      if(hist.length>0)hist[hist.length-1]._playerRead=true;
+      hist.forEach(h=>{if(h&&h.npc)h._playerRead=true;});
     }
     // Mark any phone threads from this NPC as read (修复红点不消)
     if(G.phone&&G.phone.threads){
@@ -8128,7 +8128,7 @@ async function _doSendMessage(msg,npcId){
   // Mark as read (player just replied)
   if(G.phone.chatHistory&&G.phone.chatHistory[npcId]){
     const hist=G.phone.chatHistory[npcId];
-    if(hist.length>0)hist[hist.length-1]._playerRead=true;
+    hist.forEach(h=>{if(h&&h.npc)h._playerRead=true;});
   }
   // 社交拓展：更新好友关系
   if(npcId && npcId.startsWith('contact_')){
