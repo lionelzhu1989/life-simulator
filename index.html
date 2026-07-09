@@ -7039,7 +7039,7 @@ function renderPhoneList(){
 
 function openThread(id){ 
   if(!G.phone)return;
-  const thread=G.phone.threads.find(t=>t.id===id);  if(!thread){ return;}
+  const thread=G.phone.threads.find(t=>String(t.id)===String(id));  if(!thread){ return;}
   if(thread.status==='unread'){thread.status='reading';thread.readMonth=G.totalMonths;}
   G._openThreadId=id;
   // AI替换硬编码NPC消息（异步，不阻塞UI）
