@@ -750,8 +750,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 .career-trait-tag{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;background:#f0f2f5;color:var(--text-light);}
 .career-card-mult{font-size:11px;color:var(--primary);font-weight:500;}
 /* ===== V5: 工作情景弹窗 ===== */
-.work-scenario-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:1100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
-.work-scenario-overlay.show{opacity:1;pointer-events:auto;}
+.work-scenario-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:1100;display:none;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+.work-scenario-overlay.show{display:flex;opacity:1;pointer-events:auto;}
 .work-scenario-box{background:#fff;border-radius:16px;width:88%;max-width:380px;padding:24px 20px;transform:scale(0.85);transition:transform .3s;max-height:80vh;overflow-y:auto;}
 .work-scenario-overlay.show .work-scenario-box{transform:scale(1);}
 .ws-career-icon{font-size:32px;margin-bottom:4px;}
@@ -769,8 +769,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 
 
 /* ====== Social System: Friend Detail ====== */
-.friend-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:6500;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
-.friend-detail-overlay.show{opacity:1;pointer-events:auto;}
+.friend-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:6500;display:none;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+.friend-detail-overlay.show{display:flex;opacity:1;pointer-events:auto;}
 .friend-detail-card{background:#fff;border-radius:20px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto;transform:translateY(30px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
 .friend-detail-overlay.show .friend-detail-card{transform:translateY(0);}
 .fd-header{text-align:center;padding:24px 20px 16px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:20px 20px 0 0;color:#fff;}
@@ -974,7 +974,7 @@ body{background:linear-gradient(180deg,#E8F4FF 0%,#F5F0FF 100%) fixed !important
       <div id="recentMsgList"></div>
     </div>
     <div class="card text-center">
-      <button class="btn btn-primary btn-lg btn-block" onclick="nextMonth()" id="nextMonthBtn">🚀 度过一月</button>
+      <button class="btn btn-primary btn-lg btn-block" onclick="debouncedNextMonth()" id="nextMonthBtn" style="min-height:52px;padding:16px 32px;font-size:16px;">🚀 度过一月</button>
       <div style="display:flex;gap:8px;margin-top:10px;justify-content:center;">
         <button class="btn btn-outline btn-sm" onclick="fastForward(5)">⏩ 快进5年</button>
         <button class="btn btn-outline btn-sm" onclick="fastForward(10)">⏩ 快进10年</button>
@@ -1490,7 +1490,7 @@ function triggerMonthlyEvent(){
 function showMonthlyEventCard(evt, category){
   if(!evt) return;
   if(evt.effect){
-    if(evt.effect.money) G.cash += evt.effect.money;
+    if(evt.effect.money) G.cash = clampCash(G.cash + evt.effect.money);
     if(evt.effect.health) G.health = clamp(G.health + evt.effect.health, 0, 200);
     if(evt.effect.mood) G.mood = clamp(G.mood + evt.effect.mood, 0, 200);
     if(evt.effect.IQ) G.IQ = clamp(G.IQ + evt.effect.IQ, 0, 200);
@@ -2211,9 +2211,11 @@ function loadLegacy(){try{const s=localStorage.getItem('offer_legacy');if(s)retu
 function fmt(n){if(Math.abs(n)>=100000000)return'¥'+(n/100000000).toFixed(2)+'亿';if(Math.abs(n)>=10000)return'¥'+(n/10000).toFixed(1)+'万';return'¥'+n.toLocaleString('zh-CN');}
 function fmtShort(n){if(Math.abs(n)>=100000000)return(n/100000000).toFixed(2)+'亿';if(Math.abs(n)>=10000)return(n/10000).toFixed(1)+'万';return n.toLocaleString('zh-CN');}
 function clamp(v,min,max){return Math.max(min,Math.min(max,v));}
+function clampCash(v){return Math.max(0,v);}
 function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function randFloat(a,b){return Math.random()*(b-a)+a;}
 function getAge(){return 22+Math.floor(G.totalMonths/12);}
+function getMaxAge(){return 100;}
 function getMonth(){return(G.totalMonths%12)+1;}
 function getGameYear(){return Math.floor(G.totalMonths/12)+1;}
 
@@ -2243,7 +2245,6 @@ function showModal({title,content,showCancel,confirmText,cancelText,success}){
   overlay.style.pointerEvents='auto';
   overlay.style.visibility='visible';
   overlay.style.opacity='';
-  console.log('[modal] shown:',title);
 }
 function hideModal(){
   var o=document.getElementById('modalOverlay');
@@ -2252,9 +2253,7 @@ function hideModal(){
     o.style.opacity='0';
     o.style.pointerEvents='none';
     o.style.visibility='hidden';
-    console.log('[modal] hidden');
   } else {
-    console.error('[modal] overlay not found!');
   }
 }
 function closeModalBg(e){
@@ -2282,10 +2281,8 @@ document.addEventListener('click', function(e){
       if(action==='confirm') success({confirm:true, cancel:false});
       else if(action==='cancel') success({confirm:false, cancel:true});
     } catch(err) {
-      console.error('[modal] success callback error:', err);
     }
   }
-  console.log('[modal] delegation fired:', action);
 }, true);
 
 let toastTimer=null;
@@ -2303,7 +2300,6 @@ function showFloatText(text,positive){
 function switchTab(name){
   const pageEl=document.getElementById('page-'+name);
   if(!pageEl){
-    console.warn('[switchTab] page-'+name+' not found');
     return;
   }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -2536,7 +2532,7 @@ function selectCareer(careerId,isInternship){
 function initStockPrices(){STOCKS.forEach(s=>{if(!G.stockPrices[s.code])G.stockPrices[s.code]=s.basePrice;});}
 
 // ========== 刷新UI ==========
-function refreshAll(){refreshLife();console.log('[refreshAll] after refreshLife, page-life:',!!document.getElementById('page-life'));refreshHeader();console.log('[refreshAll] after refreshHeader, page-life:',!!document.getElementById('page-life'));updatePhoneBadge();console.log('[refreshAll] after updatePhoneBadge, page-life:',!!document.getElementById('page-life'));}
+function refreshAll(){refreshLife();refreshHeader();updatePhoneBadge();}
 function refreshLearning(){
   const el=document.getElementById('learningList');if(!el)return;
   if(!G.learning)G.learning={completed:[],studying:null,studyEndMonth:0};
@@ -2847,6 +2843,14 @@ function closeForbes(){
 }
 
 // ========== 核心：度过一月 ==========
+// Button debounce
+var _nextMonthDebounce=false;
+function debouncedNextMonth(){
+  if(_nextMonthDebounce)return;
+  _nextMonthDebounce=true;
+  nextMonth();
+  setTimeout(function(){_nextMonthDebounce=false;},500);
+}
 async function nextMonth(){
   if(G.gameOver)return;
   if(G._autoChainActive)return;
@@ -3031,7 +3035,7 @@ async function advanceMonth(){
       const healthMod=0.5+(avgHealth/100);// 0.5x ~ 1.5x
       let finalMult=result.multiplier*healthMod;
       const payout=Math.round(t.investAmount*finalMult);
-      G.cash+=payout;
+      G.cash=clampCash(G.cash+Math.max(0,payout));
       const healthDesc=avgHealth>=70?'项目运营良好':avgHealth>=40?'项目表现一般':'项目问题重重';
       G.events.push({text:result.text+' ('+healthDesc+') 获得 '+fmt(payout),type:result.type});
       if(result.multiplier>=3)G.achievements.push('techking');
@@ -3062,7 +3066,7 @@ async function advanceMonth(){
       }
     }
   }
-  const net=income-expense;G.cash+=net;
+  const net=income-expense;G.cash=clampCash(G.cash+net);
   // V2: Health decay faster
   G.health=clamp(G.health-0.3,0,200);
   // v4.0.0: Health crisis - sudden death risk when health < 30
@@ -3166,6 +3170,7 @@ async function advanceMonth(){
   
   // Game over check
   if(G.health<=0){G.gameOver=true;G.gameOverReason='健康归零，人生结束';}
+  else if(getAge()>=getMaxAge()){G.gameOver=true;G.gameOverReason='百岁寿星，人生圆满结束！';}
   else if(getAge()>=80&&Math.random()<0.3){G.gameOver=true;G.gameOverReason='安享晚年，人生圆满结束';}
   // v4.1.0: NPC事件链检测
   if(typeof checkNPCEvents==='function') checkNPCEvents();
@@ -3176,6 +3181,7 @@ async function advanceMonth(){
     G._workScenarioThisMonth=true;
   }
   
+  saveGame();
   // V6.1: 实习期特殊事件（每月30%概率触发实习内容，避免实习期无聊）
   if(G.isInternship && !G.hasChosenCareer && Math.random()<0.30){
     triggerInternshipEvent();
@@ -3302,7 +3308,7 @@ function acceptOffer(offerId){
   // 执行惩罚
   G.reputation=clamp(G.reputation-penalty.repPenalty,0,100);
   if(penalty.fine>0){
-    G.cash-=penalty.fine;
+    G.cash=clampCash(G.cash-penalty.fine);
   }
   G.breachCount++;
   G.lastJobChangeMonth=G.totalMonths;
@@ -3393,7 +3399,7 @@ async function fastForward(years){
 
 function applySmallEvent(evt){
   const e={text:evt.text,type:evt.type};const eff=evt.effect;
-  if(eff.money){G.cash+=eff.money;e.text+=' ('+(eff.money>0?'+':'')+fmt(eff.money)+')';}
+  if(eff.money){G.cash=clampCash(G.cash+eff.money);e.text+=' ('+(eff.money>0?'+':'')+fmt(eff.money)+')';}
   if(eff.health)G.health=clamp(G.health+eff.health,0,200);
   if(eff.mood)G.mood=clamp(G.mood+eff.mood,0,200);
   if(eff.IQ)G.IQ=clamp(G.IQ+eff.IQ,0,200);
@@ -3587,6 +3593,9 @@ function checkPromotion(){
   var jobs=getCareerJobs();
   var nextJob=jobs[G.jobIndex+1];
   if(!nextJob) return;
+  // IQ/EQ requirement check for promotion
+  if(nextJob.requireIQ && G.IQ<nextJob.requireIQ) return;
+  if(nextJob.requireEQ && G.EQ<nextJob.requireEQ) return;
   if(G._promotionOffered&&G._promotionMonth===G.totalMonths) return;
   G._promotionOffered=true;
   G._promotionMonth=G.totalMonths;
@@ -4237,7 +4246,9 @@ function confirmTrade(){
   const s=STOCKS.find(x=>x.code===code);
   if(action==='buy'){
     const cost=shares*price;
-    G.cash-=cost;
+    // Safety: re-check cash hasn't changed since modal opened
+    if(G.cash<cost){showToast('现金不足！');closeTradeModal();return;}
+    G.cash=clampCash(G.cash-cost);
     G.stockHoldings[code]=(G.stockHoldings[code]||0)+shares;
     if(!G.lifeEvents)G.lifeEvents=[];
     G.lifeEvents.push({month:G.totalMonths,icon:'📈',title:'买入'+s.name,detail:'花了'+fmt(cost)+'买入'+s.name+' '+shares+'股',type:'invest'});
@@ -4246,6 +4257,9 @@ function confirmTrade(){
     showFloatText('📈 买入'+shares+'股 '+s.name,true);
   }else{
     const revenue=shares*price;
+    // Safety: re-check holdings haven't changed
+    const currentHoldings=G.stockHoldings[code]||0;
+    if(shares>currentHoldings){showToast('持仓不足！');closeTradeModal();return;}
     G.cash+=revenue;
     G.stockHoldings[code]-=shares;
     if(G.stockHoldings[code]<=0)delete G.stockHoldings[code];
@@ -4741,50 +4755,27 @@ function buyLegacy(id){
   G.legacyPoints-=u.cost;G.legacyUpgrades.push(id);
   saveLegacy();showRebirthPanel();showToast('✅ 购买成功！');
 }
-// MutationObserver: 监控page-life被移除
-const __pageLifeObserver=new MutationObserver((mutations)=>{
-  mutations.forEach(m=>{
-    m.removedNodes.forEach(n=>{
-      if(n.id==='page-life'||(n.querySelector&&n.querySelector('#page-life'))){
-        console.error('[Observer] page-life removed! Stack:',new Error().stack);
-      }
-    });
-  });
-});
-setTimeout(()=>{
-  const pl=document.getElementById('page-life');
-  if(pl)__pageLifeObserver.observe(pl.parentElement||document.body,{childList:true,subtree:true});
-},2000);
 
 function doRebirth(){
   if(!document.getElementById('page-life')){
-    console.error('[doRebirth] page-life missing at start! bodyHTML length:',document.body.innerHTML.length);
     showToast('页面状态异常，正在刷新...','warning',1500);
     setTimeout(()=>{location.href=location.href.split('?')[0]+'?t='+Date.now();},1500);
     return;
   }
-  showModal({title:'确定重生？',content:'当前人生将结束，已购买的升级将在下一轮生效。\n\n当前LP：'+(G.legacyPoints||0),success(res){
+  showModal({title:'确定重生？',content:'当前人生将结束，已购买的升级将在下一轮生效。\\n\\n当前LP：'+(G.legacyPoints||0),success(res){
     if(res.confirm){
       try{
-        console.log('[doRebirth] step1: clearGame');
         clearGame();
-        console.log('[doRebirth] step2: defaultState');
         G=defaultState();
-        console.log('[doRebirth] step3: initStockPrices');
         initStockPrices();
-        console.log('[doRebirth] step4: saveGame');
         saveGame();
-        console.log('[doRebirth] step5: closeRebirthPanel');
         closeRebirthPanel();
-        console.log('[doRebirth] step6: refreshAll');
         refreshAll();
-        console.log('[doRebirth] step7: switchTab, page-life exists:',!!document.getElementById('page-life'));
         // 保险：如果page-life丢失，强制恢复gameApp显示
         const _ga=document.getElementById('gameApp');
         if(_ga) _ga.style.display='flex';
         const _pl=document.getElementById('page-life');
         if(!_pl){
-          console.warn('[doRebirth] page-life still missing, forcing reload');
           showToast('正在恢复页面...','warning',800);
           setTimeout(()=>{location.href=location.href.split('?')[0]+'?t='+Date.now();},800);
           return;
@@ -4801,7 +4792,6 @@ function doRebirth(){
         showToast('♻️ 重生成功！获得 '+_lp+' LP，继承上一轮加成');
         checkAchievements();
       }catch(e){
-        console.error('doRebirth error:',e);
         showToast('重生出错，请重试');
       }
     }
@@ -6389,7 +6379,7 @@ async function openProactiveChat(npcId){
   try{
     initChatHistory();
     injectDynamicContacts();
-    const p=NPC_PERSONALITIES[npcId];if(!p)return;
+    const p=NPC_PERSONALITIES[npcId]||{name:npcId,avatar:'💼',traits:['工作事件']};if(!p)return;
     G._openProactiveNpc=npcId;
     // Mark chat history as read
     if(G.phone.chatHistory&&G.phone.chatHistory[npcId]){
@@ -7043,9 +7033,9 @@ function renderPhoneList(){
   updatePhoneHint();
 }
 
-function openThread(id){
+function openThread(id){ 
   if(!G.phone)return;
-  const thread=G.phone.threads.find(t=>t.id===id);if(!thread)return;
+  const thread=G.phone.threads.find(t=>t.id===id);  if(!thread){ return;}
   if(thread.status==='unread'){thread.status='reading';thread.readMonth=G.totalMonths;}
   G._openThreadId=id;
   // AI替换硬编码NPC消息（异步，不阻塞UI）
@@ -7056,7 +7046,7 @@ function openThread(id){
   const area=document.getElementById('chatInputArea');
   if(opts)opts.style.display='flex';
   if(area)area.style.display='none';
-  document.getElementById('chatOverlay').classList.add('show');
+   document.getElementById('chatOverlay').classList.add('show'); 
   updatePhoneBadge();
 }
 
@@ -7086,7 +7076,7 @@ async function _aiFillThread(thread){
   }
 }
 
-function renderChat(){
+function renderChat(){ 
   const thread=G.phone.threads.find(t=>t.id===G._openThreadId);if(!thread)return;
   document.getElementById('chatName').textContent=thread.npcName+(thread.type==='call'?' 📞来电':'');
   const body=document.getElementById('chatBody');
