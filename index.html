@@ -834,6 +834,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 
 /* QQ风按钮 */
 .btn{border-radius:20px !important;font-weight:600 !important;transition:all .2s;border:none !important;}
+.btn-outline{border:1.5px solid var(--primary) !important;background:transparent !important;color:var(--primary) !important;box-shadow:none !important;}
 .btn-primary{background:var(--qq-blue) !important;color:#fff;box-shadow:0 4px 0 #0990C8;}
 .btn-success{background:var(--qq-green) !important;color:#fff;box-shadow:0 4px 0 #1EA85E;}
 .btn-danger{background:var(--qq-pink) !important;color:#fff;box-shadow:0 4px 0 #D94E7A;}
@@ -2726,8 +2727,8 @@ function renderRecentMsgs(){
   recent.forEach(t=>{
     const npc=NPCS[t.npcId]||{name:'未知',avatar:'❓'};
     const lastRound=t.rounds[t.rounds.length-1];
-    const preview=lastRound?(lastRound.text||lastRound.option||'').substring(0,30):'';
-    html+='<div class="msg-preview-item" onclick="switchTab(\'phone\');setTimeout(()=>openProactiveChat(\''+t.npcId+'\'),200)">';
+    const preview=lastRound?(lastRound.npcMsgs?lastRound.npcMsgs[lastRound.npcMsgs.length-1]:(lastRound.text||'')).substring(0,30):'';
+    html+='<div class="msg-preview-item" onclick="switchTab(\'phone\');setTimeout(()=>openThread(\''+t.id+'\'),200)">';
     html+='<div class="msg-preview-avatar">'+_avt(npc.avatar)+'</div>';
     html+='<div class="msg-preview-info"><div class="msg-preview-name">'+npc.name+'</div>';
     html+='<div class="msg-preview-text">'+preview+'</div></div>';
