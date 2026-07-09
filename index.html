@@ -255,7 +255,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 .msg-item:active{background:#f8f8f8;}
 .msg-av{width:44px;height:44px;border-radius:8px;background:#f0f0f0;overflow:hidden;flex-shrink:0;margin-right:12px;position:relative;}
 .msg-av img{width:100%;height:100%;border-radius:8px;object-fit:cover;}
-.msg-preview-avatar img,.fd-avatar img,.contact-avatar img,.moment-av img,.mc-av img{width:100%;height:100%;border-radius:inherit;object-fit:cover;}
+.msg-preview-avatar img,.fd-avatar img,.contact-avatar img,.moment-av img,.mc-av img{width:100%;height:100%;border-radius:inherit;object-fit:cover;display:block;}
 .msg-bd{flex:1;min-width:0;}
 .msg-nm{font-size:16px;font-weight:500;color:#191919;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .msg-pv{font-size:13px;color:#b0b0b0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -774,7 +774,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
 .friend-detail-card{background:#fff;border-radius:20px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto;transform:translateY(30px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
 .friend-detail-overlay.show .friend-detail-card{transform:translateY(0);}
 .fd-header{text-align:center;padding:24px 20px 16px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:20px 20px 0 0;color:#fff;}
-.fd-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 10px;border:3px solid rgba(255,255,255,.4);}
+.fd-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 10px;border:3px solid rgba(255,255,255,.4);overflow:hidden;}
 .fd-name{font-size:20px;font-weight:700;}
 .fd-company{font-size:13px;opacity:.8;margin-top:4px;}
 .fd-body{padding:16px 20px;}
@@ -7251,7 +7251,7 @@ function showChatProfile(){
   let isContact=false;var friendLevel=0;var note='';
   if(npcId){const existing=(G.socialContacts||[]).find(c=>c.id===npcId);if(existing){isContact=true;friendLevel=existing.friendLevel||0;}if(G.notes&&G.notes[npcId])note=G.notes[npcId];}
   const labels=['陌生人','认识','熟悉','好友'];
-  const relation=isContact?labels[friendLevel]||'认识':'未加入通讯录';
+  const relation=isCoreNpc?'核心人物':(isContact?labels[friendLevel]||'认识':'未加入通讯录');
   const p = NPC_PERSONALITIES[npcId] || {};
   
   let html = '<div class="chat-profile-avatar">' + _avt(p.avatar) + '</div>';
