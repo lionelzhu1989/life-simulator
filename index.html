@@ -1,1294 +1,706 @@
 <!DOCTYPE html>
-<!--
-  人生模拟器 (Life Simulator) - 清洁复刻版
-  基于原版 https://lionelzhu1989.github.io/life-simulator-miniprogram/
-  
-  核心功能：
-  - 属性系统：健康、心情、智商、情商
-  - 职业系统：8个行业方向，每个6级晋升
-  - 股票交易：6支股票，实时行情，新闻影响
-  - 房产投资：6种房产，支持按揭贷款
-  - 商业投资：6种商业模式，风险/收益系统
-  - 科技投资：AI/新能源/生物科技，项目事件
-  - 随机事件：每月触发，区分工作/生活/社交
-  - 人生抉择：12+个抉择事件，影响属性和财富
-  - 成就系统：18项成就
-  - 重生轮回：轮回点(LP)永久加成系统
-  - 手机系统：消息、通讯录、朋友圈、通知
-  - NPC互动：妈妈/老板/同事/朋友/配偶/孩子
-  - 奢侈品：游艇/私人飞机/慈善基金/私人岛屿
-  - 五维评分：身心/物质/关系/事业/自由
-  - 财富排行榜
-  - 学习充电：8门课程
--->
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>人生模拟器 - 从校园到人生巅峰</title>
+<title>offer含金量 v3.3</title>
 <style>
+
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-
 :root{--primary:#3498db;--primary-dark:#2980b9;--header-bg:#2c3e50;--bg:#f0f2f5;--card-bg:#fff;--text:#333;--text-light:#888;--danger:#e74c3c;--success:#27ae60;--warning:#f39c12;--gold:#f1c40f;--radius:12px;--shadow:0 2px 12px rgba(0,0,0,0.08);}
-
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB',sans-serif;background:var(--bg);color:var(--text);overflow:hidden;}
-
 .app{height:100%;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative;background:var(--bg);}
-
 .page{flex:1;overflow-y:auto;padding:16px;padding-bottom:80px;-webkit-overflow-scrolling:touch;display:none;}
-
 .page.active{display:block;}
-
 .header{background:var(--header-bg);color:#fff;padding:16px 20px 14px;text-align:center;position:relative;flex-shrink:0;}
-
 .header h1{font-size:18px;font-weight:600;letter-spacing:1px;}
-
 .header-sub{font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px;}
-
 .tab-bar{display:flex;background:#fff;border-top:1px solid #e8e8e8;flex-shrink:0;padding-bottom:env(safe-area-inset-bottom,0);position:relative;z-index:100;}
-
 .tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0 6px;font-size:10px;color:var(--text-light);cursor:pointer;transition:color .2s;user-select:none;-webkit-user-select:none;}
-
 .tab-item.active{color:var(--primary);}
-
 .tab-item .tab-icon{font-size:22px;margin-bottom:2px;}
-
 .tab-item:active{opacity:.7;}
-
 .card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin-bottom:12px;}
-
 .card-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
-
 .card-title .icon{font-size:18px;}
-
 .attr-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f5f5;}
-
 .attr-row:last-child{border-bottom:none;}
-
 .attr-label{font-size:13px;color:#666;display:flex;align-items:center;gap:4px;}
-
 .attr-value{font-size:14px;font-weight:600;color:var(--text);}
-
 .attr-bar{flex:1;height:6px;background:#eee;border-radius:3px;margin:0 12px;overflow:hidden;}
-
 .attr-bar-fill{height:100%;border-radius:3px;transition:width .5s ease;}
-
 .bar-health{background:linear-gradient(90deg,#e74c3c,#27ae60);}
-
 .bar-mood{background:linear-gradient(90deg,#e67e22,#f1c40f);}
-
 .bar-iq{background:linear-gradient(90deg,#9b59b6,#3498db);}
-
 .bar-eq{background:linear-gradient(90deg,#e91e63,#ff5722);}
-
 .money-big{font-size:28px;font-weight:700;color:var(--warning);text-align:center;padding:8px 0;}
-
 .money-label{font-size:12px;color:var(--text-light);text-align:center;margin-top:-4px;}
-
 .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
-
 .stat-item{text-align:center;padding:10px;background:#f8f9fa;border-radius:8px;}
-
 .stat-item .num{font-size:18px;font-weight:700;color:var(--primary);}
-
 .stat-item .label{font-size:11px;color:var(--text-light);margin-top:2px;}
-
 .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 24px;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;-webkit-user-select:none;}
-
 .btn:active{transform:scale(0.96);opacity:.85;}
-
 .btn-primary{background:var(--primary);color:#fff;}
-
 .btn-success{background:var(--success);color:#fff;}
-
 .btn-danger{background:var(--danger);color:#fff;}
-
 .btn-warning{background:var(--warning);color:#fff;}
-
 .btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary);}
-
 .btn-block{display:flex;width:100%;}
-
 .btn-sm{padding:6px 14px;font-size:12px;}
-
 .btn-lg{padding:14px 32px;font-size:16px;}
-
 .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
-
-.list-item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:14px 0;border-bottom:1px solid #f0f0f0;}
-
+.list-item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:14px 12px;min-height:48px;border-bottom:1px solid #f0f0f0;}
 .list-item:last-child{border-bottom:none;}
-
 .list-info{min-width:0;overflow:hidden;}
-
 .list-info .name{font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;}
-
 .list-info .desc{font-size:12px;color:var(--text-light);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;}
-
 .list-action{white-space:nowrap;}
-
 .stock-price{font-size:20px;font-weight:700;}
-
 .stock-up{color:var(--danger);}
-
 .stock-down{color:var(--success);}
-
 .stock-flat{color:var(--text-light);}
-
 .stock-hold{font-size:12px;color:var(--text-light);margin-top:4px;}
-
 .input-group{display:flex;align-items:center;gap:8px;margin-top:8px;}
-
 .input{flex:1;height:36px;border:1.5px solid #ddd;border-radius:8px;padding:0 12px;font-size:14px;outline:none;transition:border .2s;}
-
 .input:focus{border-color:var(--primary);}
-
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
-
 .modal-overlay.show{opacity:1;pointer-events:auto;}
-
 .modal-box{background:#fff;border-radius:16px;width:85%;max-width:360px;max-height:85vh;padding:24px 20px;text-align:center;transform:scale(0.85);transition:transform .25s;pointer-events:auto;overflow:hidden;display:flex;flex-direction:column;}
-
 .modal-overlay.show .modal-box{transform:scale(1);}
-
 .modal-title{font-size:17px;font-weight:600;margin-bottom:10px;flex-shrink:0;}
-
 .modal-content{font-size:14px;color:#666;margin-bottom:20px;white-space:pre-line;text-align:left;line-height:1.7;max-height:50vh;overflow-y:auto;overflow-wrap:break-word;word-break:break-word;flex:1;}
-
 .modal-btns{display:flex;gap:10px;justify-content:center;position:relative;z-index:10;flex-shrink:0;}
-
 .modal-btns .btn{flex:1;position:relative;z-index:11;}
-
 .toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.8);background:rgba(0,0,0,.75);color:#fff;padding:14px 24px;border-radius:10px;font-size:14px;z-index:2000;opacity:0;pointer-events:none;transition:all .3s;text-align:center;max-width:260px;}
-
 .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
-
 .event-banner{padding:14px 16px;border-radius:10px;margin-bottom:12px;font-size:13px;line-height:1.6;animation:slideDown .3s ease;}
-
 .event-good{background:linear-gradient(135deg,#d4efdf,#a9dfbf);color:#1e8449;border:1px solid #a9dfbf;}
-
 .event-bad{background:linear-gradient(135deg,#fadbd8,#f1948a);color:#922b21;border:1px solid #f1948a;}
-
 .event-neutral{background:linear-gradient(135deg,#d6eaf8,#aed6f1);color:#1a5276;border:1px solid #aed6f1;}
-
 @keyframes slideDown{from{transform:translateY(-20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-
-.rank-item{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #f0f0f0;}
-
+.rank-item{display:flex;align-items:center;padding:12px 12px;min-height:48px;border-bottom:1px solid #f0f0f0;}
 .rank-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;margin-right:12px;flex-shrink:0;}
-
 .rank-1{background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;}
-
 .rank-2{background:linear-gradient(135deg,#bdc3c7,#95a5a6);color:#fff;}
-
 .rank-3{background:linear-gradient(135deg,#e67e22,#d35400);color:#fff;}
-
 .rank-other{background:#f0f0f0;color:#999;}
-
 .rank-info{flex:1;}
-
 .rank-name{font-size:14px;font-weight:500;}
-
 .rank-detail{font-size:11px;color:var(--text-light);margin-top:2px;}
-
 .rank-money{font-size:15px;font-weight:700;color:var(--warning);}
-
 .section-title{font-size:13px;color:var(--text-light);margin:16px 0 8px;font-weight:500;}
-
 .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;}
-
 .tag-green{background:#d5f5e3;color:#1e8449;}
-
 .tag-red{background:#fadbd8;color:#922b21;}
-
 .tag-blue{background:#d6eaf8;color:#1a5276;}
-
 .tag-orange{background:#fdebd0;color:#935116;}
-
 .divider{height:1px;background:#f0f0f0;margin:12px 0;}
-
 .text-center{text-align:center;}
-
 .text-sm{font-size:12px;}
-
 .text-muted{color:var(--text-light);}
-
 .mt-8{margin-top:8px;}
-
 .mt-12{margin-top:12px;}
-
 .mt-16{margin-top:16px;}
-
 .mb-8{margin-bottom:8px;}
-
 .mb-12{margin-bottom:12px;}
-
 .flex-between{display:flex;justify-content:space-between;align-items:center;}
-
 .flex-center{display:flex;align-items:center;justify-content:center;}
-
 .gap-8{gap:8px;}
-
 .gap-12{gap:12px;}
-
 .welcome-page{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:40px 24px;text-align:center;background:linear-gradient(135deg,#2c3e50 0%,#3498db 100%);color:#fff;}
-
 .welcome-page h1{font-size:32px;margin-bottom:8px;}
-
 .welcome-page .subtitle{font-size:14px;opacity:.8;margin-bottom:32px;}
-
 .welcome-page .start-btn{background:var(--gold);color:#333;padding:14px 48px;border-radius:30px;font-size:18px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(241,196,15,.4);}
-
 .welcome-page .start-btn:active{transform:scale(0.95);}
-
 .welcome-page .features{margin-top:40px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
-
 .welcome-page .feat{background:rgba(255,255,255,.15);border-radius:10px;padding:10px 16px;font-size:12px;}
-
 .game-over{text-align:center;padding:40px 20px;}
-
 .game-over .emoji{font-size:64px;margin-bottom:16px;}
-
 .game-over h2{font-size:22px;margin-bottom:8px;}
-
 .game-over .summary{font-size:14px;color:#666;line-height:1.8;margin:20px 0;}
-
 .game-over .final-money{font-size:36px;font-weight:700;color:var(--warning);margin:16px 0;}
-
 .float-text{position:fixed;font-size:18px;font-weight:700;pointer-events:none;z-index:3000;animation:floatUp 1.5s ease-out forwards;}
-
 .float-text.positive{color:var(--success);}
-
 .float-text.negative{color:var(--danger);}
-
 @keyframes floatUp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-60px);}}
-
 .ai-float-btn{position:fixed;bottom:100px;right:16px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-radius:20px;padding:10px 16px;display:flex;align-items:center;gap:6px;box-shadow:0 4px 16px rgba(102,126,234,.4);z-index:999;cursor:pointer;animation:pulse 2s infinite;}
-
 .ai-float-icon{font-size:20px;}
-
 .ai-float-text{font-size:12px;font-weight:600;}
-
 .ai-float-close{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#999;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;line-height:1;}
-
 @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
-
 .guide-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:4000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
-
 .guide-overlay.show{opacity:1;pointer-events:auto;}
-
 .guide-box{background:#fff;border-radius:16px;padding:28px 24px;text-align:center;max-width:300px;transform:scale(0.8);transition:transform .3s;}
-
 .guide-overlay.show .guide-box{transform:scale(1);}
-
 .guide-icon{font-size:48px;margin-bottom:12px;}
-
 .guide-text{font-size:16px;font-weight:600;color:var(--text);margin-bottom:16px;line-height:1.5;}
-
 .promo-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:5000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
-
 .promo-overlay.show{opacity:1;pointer-events:auto;}
-
 .promo-label{font-size:20px;color:rgba(255,255,255,.6);letter-spacing:8px;text-transform:uppercase;animation:promoFadeIn .5s ease-out;}
-
 .promo-text{font-size:48px;font-weight:900;color:var(--gold);text-shadow:0 0 20px rgba(241,196,15,.8);margin:16px 0;animation:promoPulse .6s ease-out .2s both;}
-
 .promo-job{font-size:28px;color:#fff;animation:promoSlideUp .5s ease-out .5s both;}
-
 .promo-salary{font-size:18px;color:var(--success);margin-top:12px;animation:promoSlideUp .5s ease-out .7s both;}
-
 @keyframes promoFadeIn{from{opacity:0;}to{opacity:1;}}
-
 @keyframes promoPulse{0%{transform:scale(0.3);opacity:0;}60%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
-
 @keyframes promoSlideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-
 .invest-tabs{display:flex;gap:0;margin-bottom:12px;background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);}
-
 .invest-tab{flex:1;padding:10px 4px;text-align:center;font-size:12px;font-weight:500;color:var(--text-light);cursor:pointer;transition:all .2s;border-bottom:2px solid transparent;}
-
 .invest-tab.active{color:var(--primary);border-bottom-color:var(--primary);background:rgba(52,152,219,.05);}
-
 .invest-content{display:none;}
-
 .invest-content.active{display:block;}
-
 .dim-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5;}
-
 .dim-row:last-child{border-bottom:none;}
-
 .dim-label{width:70px;font-size:13px;color:#666;flex-shrink:0;}
-
 .dim-bar{flex:1;height:8px;background:#eee;border-radius:4px;margin:0 10px;overflow:hidden;}
-
 .dim-bar-fill{height:100%;border-radius:4px;transition:width .6s ease;}
-
 .dim-score{width:36px;font-size:14px;font-weight:700;text-align:right;flex-shrink:0;}
-
 .task-item{display:flex;align-items:center;padding:12px 0;border-bottom:1px solid #f0f0f0;}
-
 .task-item:last-child{border-bottom:none;}
-
 .task-icon{font-size:24px;margin-right:12px;flex-shrink:0;}
-
 .task-info{flex:1;}
-
 .task-name{font-size:14px;font-weight:500;}
-
 .task-desc{font-size:12px;color:var(--text-light);margin-top:2px;}
-
 .task-reward{font-size:12px;color:var(--success);font-weight:600;}
-
 .task-check{width:24px;height:24px;border-radius:50%;border:2px solid #ddd;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-left:8px;}
-
 .task-check.done{background:var(--success);border-color:var(--success);color:#fff;}
-
 .ach-item{display:inline-flex;flex-direction:column;align-items:center;width:calc(33.33% - 8px);margin:4px;padding:12px 4px;background:#f8f9fa;border-radius:10px;text-align:center;}
-
 .ach-item.locked{opacity:.4;filter:grayscale(1);}
-
 .ach-icon{font-size:28px;margin-bottom:4px;}
-
 .ach-name{font-size:11px;font-weight:600;color:var(--text);}
-
 .ach-desc{font-size:10px;color:var(--text-light);margin-top:2px;}
-
 .rebirth-panel{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:5000;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow-y:auto;}
-
 .rebirth-panel.show{display:flex;}
-
 .rebirth-card{background:#fff;border-radius:16px;padding:24px;width:100%;max-width:360px;max-height:80vh;overflow-y:auto;}
-
 .rebirth-title{font-size:20px;font-weight:700;text-align:center;margin-bottom:16px;}
-
 .lp-display{text-align:center;padding:16px;background:linear-gradient(135deg,#f1c40f,#e67e22);border-radius:12px;color:#fff;margin-bottom:16px;}
-
 .lp-num{font-size:36px;font-weight:900;}
-
 .upgrade-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;}
-
 .upgrade-name{font-size:13px;font-weight:500;}
-
 .upgrade-cost{font-size:12px;color:var(--warning);font-weight:600;}
-
 .page::-webkit-scrollbar{width:0;}
 
 
 /* ====== V2: Event Choice Modal ====== */
-
 .choice-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:4500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
-
 .choice-overlay.show{opacity:1;pointer-events:auto;}
-
 .choice-card{background:#fff;border-radius:20px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto;transform:translateY(30px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);padding:0;}
-
 .choice-overlay.show .choice-card{transform:translateY(0);}
-
 .choice-header{padding:20px 20px 12px;text-align:center;border-bottom:1px solid #f0f0f0;}
-
 .choice-scene{font-size:14px;color:#666;line-height:1.7;min-height:60px;}
-
 .choice-title{font-size:18px;font-weight:700;margin-bottom:8px;}
-
 .choice-age-badge{display:inline-block;background:var(--primary);color:#fff;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;margin-bottom:8px;}
-
 .choice-options{padding:12px 16px 20px;}
-
 .choice-option{display:flex;align-items:flex-start;gap:12px;padding:14px 12px;margin-bottom:10px;background:#f8f9fa;border-radius:12px;cursor:pointer;transition:all .2s;border:2px solid transparent;}
-
 .choice-option:hover{background:#eaf2ff;border-color:var(--primary);}
-
 .choice-option:active{transform:scale(0.98);}
-
 .choice-option.locked{opacity:.45;cursor:not-allowed;}
-
 .choice-option-icon{font-size:28px;flex-shrink:0;margin-top:2px;}
-
 .choice-option-body{flex:1;}
-
 .choice-option-title{font-size:14px;font-weight:600;color:var(--text);}
-
 .choice-option-desc{font-size:12px;color:var(--text-light);margin-top:3px;line-height:1.4;}
-
 .choice-option-tag{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;margin-top:4px;}
-
 .tag-safe{background:#d5f5e3;color:#1e8449;}
-
 .tag-risk{background:#fadbd8;color:#922b21;}
-
 .tag-golden{background:#fef9e7;color:#b7950b;}
-
 .choice-option-lock{font-size:11px;color:var(--danger);margin-top:4px;}
 
 /* ====== V2: News Banner ====== */
-
 .news-banner{padding:12px 14px;border-radius:10px;margin-bottom:12px;font-size:12px;line-height:1.5;position:relative;overflow:hidden;}
-
 .news-banner.news-good{background:linear-gradient(135deg,#d4efdf,#a9dfbf);color:#1e8449;border:1px solid #a9dfbf;}
-
 .news-banner.news-bad{background:linear-gradient(135deg,#fadbd8,#f1948a);color:#922b21;border:1px solid #f1948a;}
-
 .news-banner-title{font-weight:700;font-size:13px;margin-bottom:4px;}
-
 .news-banner-close{position:absolute;top:8px;right:10px;background:none;border:none;font-size:16px;cursor:pointer;color:inherit;opacity:.6;}
-
 .news-banner-close:hover{opacity:1;}
-
 .news-timer{font-size:10px;opacity:.7;margin-top:4px;}
-
 .news-impact{font-weight:600;font-size:11px;margin-top:2px;}
 
 /* ====== V2: Tier Unlocks ====== */
-
 .tier-banner{padding:16px;border-radius:12px;margin-bottom:12px;text-align:center;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;animation:tierPulse 2s ease-in-out;}
-
 .tier-banner h3{font-size:16px;margin-bottom:4px;}
-
 .tier-banner p{font-size:12px;opacity:.85;}
-
 @keyframes tierPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
 
 /* ====== V2: Forbes Celebration ====== */
-
 .forbes-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:6000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .5s;}
-
 .forbes-overlay.show{opacity:1;pointer-events:auto;}
-
 .forbes-text{font-size:48px;font-weight:900;color:#f1c40f;text-shadow:0 0 40px rgba(241,196,15,.6);animation:forbesZoom .8s cubic-bezier(.34,1.56,.64,1);}
-
 .forbes-sub{font-size:20px;color:#fff;margin-top:16px;animation:forbesFade 1s ease-out .5s both;}
-
 .forbes-confetti{position:absolute;width:10px;height:10px;border-radius:2px;animation:confettiFall 3s linear forwards;}
-
 @keyframes forbesZoom{0%{transform:scale(0) rotate(-10deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
-
 @keyframes forbesFade{0%{opacity:0;transform:translateY(20px);}100%{opacity:1;transform:translateY(0);}}
-
 @keyframes confettiFall{0%{opacity:1;transform:translateY(-100vh) rotate(0);}100%{opacity:0;transform:translateY(100vh) rotate(720deg);}}
 
 /* ====== V2: Luxury Cards ====== */
-
 .luxury-card{padding:14px;border-radius:12px;margin-bottom:10px;border:1px solid #eee;background:#fff;}
-
 .luxury-card .luxury-name{font-size:14px;font-weight:600;}
-
 .luxury-card .luxury-price{font-size:12px;color:var(--warning);font-weight:600;}
-
 .luxury-card .luxury-desc{font-size:11px;color:var(--text-light);margin-top:4px;}
-
 .luxury-owned{border-color:var(--success);background:#f0faf4;}
 
+
 .phone-tabs{display:flex;background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:12px;}
-
 .phone-tab{flex:1;padding:10px 4px;text-align:center;font-size:12px;font-weight:500;color:var(--text-light);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
-
 .phone-tab.active{color:var(--primary);border-bottom-color:var(--primary);background:rgba(52,152,219,.05);}
-
 .phone-content{display:none;position:relative;}.phone-content.active{display:block;}
-
 .contact-list{display:flex;flex-direction:column;gap:2px;}
-
-.contact-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#fff;cursor:pointer;transition:background .15s;}
-
+.contact-item{display:flex;align-items:center;gap:12px;padding:14px 16px;min-height:52px;background:#fff;cursor:pointer;transition:background .15s;}
 .contact-item:active{background:#f0f0f0;}
-
 .contact-avatar{width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.12);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#f0f0f0;}
-
 .contact-info{flex:1;min-width:0;}
-
 .contact-name{font-size:15px;font-weight:500;color:#333;}
-
 .contact-status{font-size:12px;color:#999;margin-top:2px;}
-
 .contact-arrow{color:#ccc;font-size:14px;}
-
-.msg-item{display:flex;align-items:center;padding:15px 4px;border-bottom:0.5px solid #e8e8e8;cursor:pointer;transition:background .15s;}
-
+.msg-item{display:flex;align-items:center;padding:15px 12px;min-height:52px;border-bottom:0.5px solid #e8e8e8;cursor:pointer;transition:background .15s;}
 .msg-item:active{background:#f8f8f8;}
-
 .msg-av{width:44px;height:44px;border-radius:8px;background:#f0f0f0;overflow:hidden;flex-shrink:0;margin-right:12px;position:relative;}
-
 .msg-av img{width:100%;height:100%;border-radius:8px;object-fit:cover;}
-
 .msg-preview-avatar img,.fd-avatar img,.contact-avatar img,.moment-av img,.mc-av img{width:100%;height:100%;border-radius:inherit;object-fit:cover;}
-
 .msg-bd{flex:1;min-width:0;}
-
 .msg-nm{font-size:16px;font-weight:500;color:#191919;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-
 .msg-pv{font-size:13px;color:#b0b0b0;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-
 .msg-mt{text-align:right;flex-shrink:0;margin-left:8px;display:flex;flex-direction:column;align-items:flex-end;}
-
 .msg-tm{font-size:11px;color:#b0b0b0;}
-
 .msg-bg{background:#fa5151;color:#fff;font-size:10px;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-top:4px;padding:0 5px;}
-
 .phone-badge{position:absolute;top:0;right:4px;background:#e74c3c;color:#fff;font-size:9px;min-width:15px;height:15px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;z-index:10;}
 /* Trade input number spinner hide */
-
 #tradeInput::-webkit-inner-spin-button,#tradeInput::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
-
 #tradeInput[type=number]{-moz-appearance:textfield;}
-
 .chat-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:#ededed;z-index:1500;display:none;flex-direction:column;max-width:480px;margin:0 auto;}
-
 .chat-overlay.show{display:flex;}
-
 .chat-hd{background:var(--header-bg);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
-
 .chat-back{font-size:24px;cursor:pointer;padding:4px;line-height:1;}
-
 .chat-nm{font-size:17px;font-weight:600;}
-
 .chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch;background:#ededed;}
-
 .chat-bub{max-width:85%;padding:10px 14px;border-radius:14px;font-size:14px;line-height:1.55;word-break:break-word;animation:bubIn .25s ease;}
-
 .chat-bub.npc{background:#fff;align-self:flex-start;border-bottom-left-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.06);}
-
 .chat-bub.player{background:#95ec69;align-self:flex-end;border-bottom-right-radius:4px;}
-
 .chat-bub.sys{background:rgba(0,0,0,.05);align-self:center;font-size:12px;color:#999;padding:6px 14px;border-radius:8px;}
-
 .chat-time{text-align:center;font-size:11px;color:#bbb;padding:8px 0;}
-
 .chat-opts{padding:12px 16px;background:#f7f7f7;border-top:1px solid #e5e5e5;display:flex;flex-direction:column;gap:8px;flex-shrink:0;}
 
 /* Chat Profile Popup */
-
 .chat-profile-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.35);z-index:1600;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
-
 .chat-profile-overlay.show{opacity:1;pointer-events:auto;}
-
 .chat-profile-card{background:#fff;border-radius:14px;width:78%;max-width:300px;padding:22px 16px 18px;position:relative;box-shadow:0 8px 30px rgba(0,0,0,.18);transform:scale(.9);transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
-
 .chat-profile-overlay.show .chat-profile-card{transform:scale(1);}
-
 .chat-profile-close{position:absolute;top:10px;right:12px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#b0b0b0;cursor:pointer;border-radius:50%;}
-
 .chat-profile-close:active{background:#f5f5f5;color:#666;}
-
 .chat-profile-body{text-align:center;}
-
 .chat-profile-avatar{width:56px;height:56px;border-radius:12px;overflow:hidden;margin:0 auto 10px;background:#f0f0f0;box-shadow:0 2px 8px rgba(0,0,0,.12);}
-
 .chat-profile-avatar img{width:100%;height:100%;object-fit:cover;}
-
 .chat-profile-name{font-size:18px;font-weight:600;color:#191919;margin-bottom:2px;}
-
 .chat-profile-traits{font-size:12px;color:#999;margin-bottom:12px;}
-
 .chat-profile-rel{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;background:#f7f7f7;border-radius:8px;margin-bottom:12px;font-size:13px;}
-
 .chat-profile-rel .rel-icon{font-size:16px;}
-
 .chat-profile-rel .rel-label{color:#666;}
-
 .chat-profile-rel .rel-value{font-weight:500;color:#333;}
-
 .chat-profile-note{text-align:left;padding:10px 12px;background:#fafafa;border-radius:8px;font-size:13px;color:#666;margin-bottom:12px;}
-
 .chat-profile-note .note-label{font-size:11px;color:#999;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;}
-
 .chat-profile-badge{display:inline-block;padding:4px 10px;border-radius:10px;font-size:11px;font-weight:600;}
-
 .badge-green{background:#e8f5e9;color:#2e7d32;}
-
 .badge-gray{background:#f0f0f0;color:#999;}
-
 .chat-opt{background:#fff;border:1.5px solid #e0e0e0;border-radius:10px;padding:12px 14px;font-size:13px;cursor:pointer;transition:all .15s;line-height:1.4;}
-
 .chat-opt:active{background:#eef6ff;border-color:var(--primary);transform:scale(0.98);}
 /* AI Chat Input Area */
-
 .chat-input-area{padding:10px 12px;background:#f7f7f7;border-top:1px solid #e5e5e5;display:flex;align-items:center;gap:8px;flex-shrink:0;}
-
 .chat-input-back{width:36px;height:36px;border-radius:50%;background:#e0e0e0;border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
-
 .chat-input-back:active{background:#d0d0d0;}
-
 .chat-input-field{flex:1;height:38px;border:1.5px solid #ddd;border-radius:19px;padding:0 14px;font-size:14px;outline:none;background:#fff;transition:border .2s;resize:none;font-family:inherit;}
-
 .chat-input-field:focus{border-color:var(--primary);}
-
 .chat-input-send{width:38px;height:38px;border-radius:50%;background:var(--primary);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
-
 .chat-input-send:active{transform:scale(0.92);opacity:.85;}
-
 .chat-input-send:disabled{background:#ccc;cursor:not-allowed;}
 /* Typing Indicator */
-
 .typing-indicator{display:inline-flex;gap:4px;padding:12px 16px;background:#fff;border-radius:18px;margin-left:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);align-self:flex-start;border-bottom-left-radius:4px;}
-
 .typing-dot{width:8px;height:8px;background:#999;border-radius:50%;animation:typingBounce 1.4s infinite ease-in-out;}
-
 .typing-dot:nth-child(2){animation-delay:0.2s;}
-
 .typing-dot:nth-child(3){animation-delay:0.4s;}
-
 @keyframes typingBounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-8px);}}
-
 .moment-card{background:#fff;border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
-
 .moment-hd{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-
 .moment-av{width:38px;height:38px;border-radius:19px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:18px;}
-
 .moment-nm{font-size:14px;font-weight:500;color:var(--primary);}
-
 .moment-tm{font-size:11px;color:var(--text-light);margin-left:auto;}
-
 .moment-txt{font-size:14px;line-height:1.6;margin-bottom:8px;}
-
 .moment-acts{display:flex;gap:16px;font-size:12px;color:var(--text-light);margin-top:8px;padding-top:8px;border-top:1px solid #f0f0f0;}
-
 .moment-act{cursor:pointer;padding:4px 8px;border-radius:4px;}
-
 .moment-act:active{background:#f0f0f0;}
-
 .moment-act.liked{color:#e74c3c;}
-
 .notif-item{display:flex;align-items:flex-start;padding:12px 0;border-bottom:1px solid #f0f0f0;}
-
 .notif-ic{width:36px;height:36px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;margin-right:10px;}
-
 .notif-dot{width:8px;height:8px;border-radius:50%;background:#e74c3c;flex-shrink:0;margin-top:6px;}
-
 .notif-body{flex:1;}.notif-title{font-size:13px;font-weight:500;}.notif-txt{font-size:12px;color:var(--text-light);margin-top:2px;}.notif-tm{font-size:11px;color:var(--text-light);margin-top:4px;}
-
 @keyframes bubIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-
 .phone-hint{background:linear-gradient(135deg,#fff3cd,#ffeeba);color:#856404;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
 /* ====== Life Events Card ====== */
-
-.event-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5;cursor:pointer;}
-
+.event-item{display:flex;align-items:flex-start;gap:10px;padding:12px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;min-height:44px;}
 .event-item:last-child{border-bottom:none;}
-
 .event-icon{font-size:20px;flex-shrink:0;margin-top:2px;}
-
 .event-content{flex:1;}
-
 .event-title{font-size:14px;font-weight:500;color:#333;}
-
 .event-month{font-size:11px;color:#999;margin-top:2px;}
-
 .event-detail{font-size:12px;color:#666;margin-top:4px;display:none;}
-
 .event-item.expanded .event-detail{display:block;}
-
 .event-expand{font-size:12px;color:var(--primary);text-align:center;padding:8px;cursor:pointer;}
-
 .event-expand:hover{background:#f0f8ff;border-radius:8px;}
 /* Recent Messages Card */
-
-.msg-preview-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5;cursor:pointer;}
-
+.msg-preview-item{display:flex;align-items:center;gap:10px;padding:12px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;min-height:48px;}
 .msg-preview-item:last-child{border-bottom:none;}
-
 .msg-preview-avatar{width:36px;height:36px;border-radius:50%;overflow:hidden;border:2px solid #e0e0e0;flex-shrink:0;display:block;}
-
 .msg-preview-info{flex:1;min-width:0;}
-
 .msg-preview-name{font-size:13px;font-weight:500;color:#333;}
-
 .msg-preview-text{font-size:12px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
-
 .msg-preview-arrow{color:#ccc;font-size:14px;}
 
 
 /* ====== Money Interaction System ====== */
-
 .money-decision-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
-
 .money-decision-overlay.show{opacity:1;pointer-events:auto;}
-
 .money-decision-card{background:#fff;border-radius:16px;padding:24px;width:280px;text-align:center;transform:scale(0.85);transition:transform .25s;}
-
 .money-decision-overlay.show .money-decision-card{transform:scale(1);}
-
 .money-decision-icon{font-size:40px;margin-bottom:8px;}
-
 .money-decision-title{font-size:17px;font-weight:600;color:var(--text);margin-bottom:8px;}
-
 .money-decision-amount{font-size:24px;font-weight:700;color:#e67e22;margin:12px 0;}
-
 .money-decision-reason{font-size:13px;color:#888;margin-bottom:16px;line-height:1.5;}
-
 .money-decision-btns{display:flex;gap:12px;}
-
 .money-decision-btns .btn{flex:1;}
-
 .money-give-confirm-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
-
 .money-give-confirm-overlay.show{opacity:1;pointer-events:auto;}
-
 .money-give-confirm-card{background:#fff;border-radius:16px;padding:24px;width:280px;text-align:center;transform:scale(0.85);transition:transform .25s;}
-
 .money-give-confirm-overlay.show .money-give-confirm-card{transform:scale(1);}
-
 .money-give-confirm-card .confirm-amount{font-size:24px;font-weight:700;color:#e67e22;margin:12px 0;}
-
 .money-give-confirm-card .confirm-npc{font-size:15px;color:var(--text);margin-bottom:4px;}
-
 .money-give-confirm-card .confirm-btns{display:flex;gap:12px;margin-top:16px;}
-
 .money-give-confirm-card .confirm-btns .btn{flex:1;}
-
 .chat-bub.money-notice{background:linear-gradient(135deg,#fff3cd,#ffeeba);align-self:center;font-size:12px;color:#856404;padding:6px 14px;border-radius:8px;max-width:90%;text-align:center;}
-
 .chat-bub.money-transfer{background:linear-gradient(135deg,#d4efdf,#a9dfbf);align-self:center;font-size:12px;color:#1e8449;padding:6px 14px;border-radius:8px;max-width:90%;text-align:center;}
 
 .toast-container{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none;width:90%;max-width:360px}
-
 .toast{background:rgba(50,50,50,.92);color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.3);animation:toast-in .3s ease,toast-out .3s ease 1.2s forwards;backdrop-filter:blur(4px)}
-
 .toast.success{border-left:3px solid #4CAF50}
-
 .toast.warning{border-left:3px solid #FF9800}
-
 .toast.danger{border-left:3px solid #f44336}
-
 .toast.info{border-left:3px solid #2196F3}
-
 @keyframes toast-in{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
-
 @keyframes toast-out{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-10px)}}
 
 /* ====== V2: Onboarding Tutorial ====== */
-
 .ob-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:6000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease}
-
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-
 .ob-card{background:#fff;border-radius:16px;padding:28px 24px;width:100%;max-width:320px;box-shadow:0 12px 40px rgba(0,0,0,.3)}
-
 .ob-progress{display:flex;gap:6px;justify-content:center;margin-bottom:20px}
-
 .pdot{width:8px;height:8px;border-radius:50%;background:#ddd;transition:all .3s}
-
 .pdot.active{background:var(--primary);transform:scale(1.2)}
-
 .pdot.done{background:var(--success)}
-
 .ob-step{animation:slideUp .3s ease}
-
 @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-
 .ob-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:10px}
-
 .ob-body{font-size:14px;color:#666;line-height:1.7;margin-bottom:20px}
-
 .ob-actions{display:flex;gap:10px;justify-content:space-between}
-
 .ob-actions .btn-next{background:var(--primary);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
-
 .ob-actions .btn-prev{background:#f0f0f0;color:#666;border:none;padding:10px 20px;border-radius:8px;font-size:14px;cursor:pointer}
-
 .ob-actions .btn-prev:active,.ob-actions .btn-next:active{transform:scale(.95)}
-
 .ob-skip{display:block;margin:16px auto 0;background:none;border:none;color:#999;font-size:12px;cursor:pointer;text-decoration:underline}
 
 /* ====== V2: Asset Visualization Charts ====== */
-
 .chart-box{background:#f8f9fa;border-radius:12px;padding:14px;margin-bottom:12px}
-
 .chart-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:4px}
-
 .mini-chart{display:flex;align-items:flex-end;gap:3px;height:80px;padding:0 4px}
-
 .chart-bar{flex:1;border-radius:3px 3px 0 0;background:linear-gradient(180deg,var(--primary),#2980b9);transition:height .4s ease;min-height:2px;position:relative}
-
 .chart-bar:hover{opacity:.8}
-
 .pie-legend{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:10px}
-
 .pie-legend span{display:flex;align-items:center;gap:3px;font-size:11px;color:#666}
-
 .pie-legend i{display:inline-block;width:10px;height:10px;border-radius:2px}
 
 /* ====== V2: Achievement Tier Display ====== */
-
 .ach-tier{margin-bottom:16px}
-
 .ach-tier-title{font-size:14px;font-weight:700;padding:6px 10px;border-left:4px solid var(--primary);margin-bottom:8px;background:#f8f9fa;border-radius:0 8px 8px 0}
-
 .ach-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#fff;border-radius:8px;margin-bottom:6px;border:1px solid #f0f0f0}
-
 .ach-item.locked{opacity:.4;filter:grayscale(1)}
-
 .ach-item .ach-icon{font-size:20px;width:28px;text-align:center;flex-shrink:0}
-
 .ach-item .ach-name{font-size:13px;font-weight:500;flex:1}
-
 .ach-item .ach-cond{font-size:11px;color:var(--text-light)}
-
 .ach-item .ach-unlocked{color:var(--success);font-weight:700}
-
 .ach-summary{text-align:center;font-size:12px;color:var(--text-light);margin:8px 0}
 
 /* ====== V2: Dimension Tips ====== */
-
 .dim-tip{display:block;font-size:10px;color:var(--text-light);margin-top:2px;padding-left:80px}
-
 .dim-name{width:70px;font-size:13px;color:#666;flex-shrink:0}
 
 /* ====== V2: Investment Transparency ====== */
-
 .inv-detail-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px dashed #f0f0f0}
-
 .inv-detail-row:last-child{border-bottom:none}
-
 .inv-detail-label{color:#999}
-
 .inv-detail-value{font-weight:600}
-
 .inv-up{color:var(--danger)}
-
 .inv-down{color:var(--success)}
-
 .stock-hold-detail{background:#f8f9fa;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:11px}
-
 .stock-pnl-positive{color:var(--danger);font-weight:600}
-
 .stock-pnl-negative{color:var(--success);font-weight:600}
 
 /* ====== V2: NPC Chat Context ====== */
-
 .npc-chat-msg{display:flex;flex-direction:column;gap:4px;margin:4px 0}
-
 .npc-chat-msg .bubble{max-width:80%;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.5}
-
 .npc-chat-msg.npc .bubble{background:#f0f0f0;color:var(--text);align-self:flex-start}
-
 .npc-chat-msg.player .bubble{background:var(--primary);color:#fff;align-self:flex-end}
-
 .npc-chat-ctx{font-size:10px;color:var(--text-light);font-style:italic;margin:0 4px}
 
 /* ====== 通讯录自定义备注 ====== */
-
 .contact-note-edit{width:100%;border:1px solid #e0e0e0;border-radius:8px;padding:6px 10px;font-size:13px;color:#555;background:#fafafa;outline:none;box-sizing:border-box;}
-
 .contact-note-edit:focus{border-color:#3498db;background:#fff;}
 /* ===== Pet System ===== */
-
 .pet-subtabs{display:flex;background:#fff;border-radius:0;margin:0;padding:8px 12px;gap:0;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:10;}
-
 .pet-subtab{flex:1;padding:8px 4px;text-align:center;font-size:13px;font-weight:500;color:#999;cursor:pointer;border-radius:8px;transition:all .2s;}
-
 .pet-subtab.active{color:#ff9800;background:#fff3e0;font-weight:700;}
-
 .pet-subtab:active{opacity:.7;}
-
 #petStoreView{padding:12px;max-width:480px;margin:0 auto;}
-
 #petDetailView{padding:0 12px 12px;max-width:480px;margin:0 auto;}
-
 .pet-shop-hd{text-align:center;padding:16px 0 12px;}
-
 .pet-shop-hd h2{margin:0;font-size:18px;font-weight:700;color:#333;}
-
 .pet-shop-hd .coin{font-size:13px;color:#999;margin-top:4px;}
-
 .pet-cat-bar{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;padding:4px 0;}
-
 .pet-cat-btn{flex-shrink:0;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:2px solid #e8e8e8;background:#fff;color:#666;transition:all .2s;}
-
 .pet-cat-btn.active{border-color:#ff9800;background:#fff3e0;color:#ff9800;font-weight:700;}
-
 .pet-cat-btn:active{transform:scale(0.95);}
-
 .pet-shop-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-
 .pet-shop-item{background:#fff;border-radius:14px;padding:14px 10px;text-align:center;cursor:pointer;transition:all .15s;border:1px solid #f0f0f0;position:relative;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);}
-
 .pet-shop-item:active{transform:scale(0.96);box-shadow:0 4px 16px rgba(0,0,0,0.1);}
-
 .pet-shop-item.rarity-common{border-color:#e0e0e0;}
-
 .pet-shop-item.rarity-rare{border-color:#ff9800;background:linear-gradient(135deg,#fff,#fff8f0);}
-
 .pet-shop-item.rarity-epic{border-color:#9c27b0;background:linear-gradient(135deg,#fff,#faf0ff);}
-
 .pet-shop-item.rarity-legend{border-color:#f44336;background:linear-gradient(135deg,#fff5f5,#fff);box-shadow:0 2px 12px rgba(244,67,54,0.15);}
-
 .pet-shop-item .ps-rank{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:8px;}
-
 .pet-shop-item.rarity-common .ps-rank{background:#f0f0f0;color:#666;}
-
 .pet-shop-item.rarity-rare .ps-rank{background:#fff3e0;color:#ff9800;}
-
 .pet-shop-item.rarity-epic .ps-rank{background:#f3e5f5;color:#9c27b0;}
-
 .pet-shop-item.rarity-legend .ps-rank{background:#ffebee;color:#f44336;animation:legendGlow 2s infinite;}
-
 @keyframes legendGlow{0%,100%{box-shadow:0 0 4px rgba(244,67,54,0.3);}50%{box-shadow:0 0 12px rgba(244,67,54,0.6);}}
-
 .pet-shop-item .ps-emoji{font-size:42px;display:block;margin:4px 0 6px;transition:transform .3s;}
-
 .pet-shop-item:active .ps-emoji{transform:scale(1.2);}
-
 .pet-shop-item .ps-name{font-size:14px;font-weight:600;color:#333;margin-bottom:2px;}
-
 .pet-shop-item .ps-desc{font-size:11px;color:#999;margin-bottom:8px;line-height:1.3;}
-
 .pet-shop-item .ps-price{font-size:15px;font-weight:700;color:#ff9800;margin-top:6px;}
-
 .pet-shop-item .ps-price.owned{color:#4caf50;font-size:12px;}
-
 .pet-card{background:linear-gradient(135deg,#fff9f0,#fff);border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 16px rgba(255,152,0,0.1);border:1px solid #ffe0b2;}
-
 .pet-display{text-align:center;padding:12px 0;}
-
 .pet-emoji{font-size:64px;display:block;margin:0 auto;transition:transform .3s;cursor:pointer;user-select:none;}
-
 .pet-emoji:active{transform:scale(1.2) rotate(10deg);}
-
 .pet-emoji.pet-acting{animation:petAct .6s ease;}
-
 @keyframes petAct{0%,100%{transform:scale(1);}50%{transform:scale(1.3) rotate(-15deg);}}
-
 .pet-name{font-size:18px;font-weight:700;color:#333;margin:8px 0 2px;}
-
 .pet-stage{font-size:12px;color:#ff9800;background:#fff3e0;padding:2px 10px;border-radius:10px;display:inline-block;}
-
 .pet-bars{margin-top:12px;}
-
 .pet-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
-
 .bar-label{width:52px;font-size:12px;color:#666;text-align:right;flex-shrink:0;}
-
 .bar-track{flex:1;height:14px;background:#f5f5f5;border-radius:7px;overflow:hidden;position:relative;}
-
 .bar-fill{height:100%;border-radius:7px;transition:width .5s;position:relative;background:#ccc;}
-
 .bar-hunger{background:linear-gradient(90deg,#ff9800,#ff5722);}
-
 .bar-hygiene{background:linear-gradient(90deg,#2196f3,#03a9f4);}
-
 .bar-mood{background:linear-gradient(90deg,#e91e63,#ff5722);}
-
 .bar-energy{background:linear-gradient(90deg,#4caf50,#8bc34a);}
-
 .bar-intimacy{background:linear-gradient(90deg,#9c27b0,#e040fb);}
-
 .bar-val{width:32px;font-size:11px;color:#999;text-align:right;flex-shrink:0;}
-
 .pet-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;}
-
 .pet-btn{display:flex;align-items:center;flex-direction:column;gap:3px;padding:10px 4px;background:#fff;border:1px solid #ffe0b2;border-radius:12px;cursor:pointer;transition:all .15s;}
-
 .pet-btn:active{background:#fff3e0;transform:scale(0.95);}
-
 .pet-btn .b-icon{font-size:22px;}
-
 .pet-btn .b-name{font-size:11px;color:#666;font-weight:500;}
-
 .pet-btn .b-cost{font-size:10px;color:#999;}
 /* Enhancement: Tricks & Status */
-
 .pet-status-bar{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;font-size:11px;color:#999;}
-
 .pet-status-emoji{font-size:16px;}
-
 .pet-trick-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin:0 2px;}
-
 .pet-trick-locked{background:#f0f0f0;color:#999;}
-
 .pet-trick-known{background:#e8f5e9;color:#2e7d32;}
-
 .pet-title-badge{background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:6px;animation:legendGlow 2s infinite;}
-
 .pet-age-display{font-size:11px;color:#999;margin-top:2px;}
-
 .pet-last-interact{font-size:10px;color:#bbb;margin-top:2px;}
 /* Minigame Modal */
-
 .pet-mini-game{padding:8px 0;}
-
 .pet-fly-disk{display:inline-block;font-size:48px;cursor:pointer;transition:transform .15s;user-select:none;padding:12px;border-radius:12px;}
-
 .pet-fly-disk:active{transform:scale(0.85);}
-
 .pet-fly-disk.missed{opacity:0.3;}
-
 .pet-math-q{font-size:24px;font-weight:700;text-align:center;padding:16px 0;color:#333;}
-
 .pet-math-opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
-
 .pet-math-opt{padding:12px 20px;background:#f5f5f5;border-radius:10px;font-size:18px;font-weight:600;cursor:pointer;border:2px solid transparent;transition:all .15s;}
-
 .pet-math-opt:active{background:#e3f2fd;border-color:#2196f3;}
-
 .pet-math-opt.correct{background:#e8f5e9;border-color:#4caf50;color:#2e7d32;}
-
 .pet-math-opt.wrong{background:#ffebee;border-color:#f44336;color:#c62828;}
-
 .pet-treasure-result{text-align:center;padding:16px 0;font-size:16px;line-height:1.8;}
-
 .pet-treasure-emoji{font-size:48px;display:block;margin-bottom:12px;}
-
 .pet-discovery-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f8f9fa;border-radius:8px;margin:4px 0;}
-
 .pet-discovery-icon{font-size:20px;}
-
 .pet-discovery-text{font-size:13px;color:#555;}
 /* Mini-action buttons row */
-
 .pet-mini-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
-
 .pet-mini-btn{display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;background:#fff8e1;border:1px solid #ffe082;border-radius:12px;cursor:pointer;transition:all .15s;}
-
 .pet-mini-btn:active{background:#ffecb3;transform:scale(0.95);}
-
 .pet-mini-btn .m-icon{font-size:22px;}
-
 .pet-mini-btn .m-name{font-size:11px;color:#666;font-weight:500;}
-
 .pet-mini-btn .m-cost{font-size:9px;color:#999;}
-
 .pet-mini-btn.disabled{opacity:0.5;cursor:not-allowed;}
 
 /* ====== 好友分组 ====== */
-
 .friend-group-header{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#f8f9fa;cursor:pointer;user-select:none;border-bottom:1px solid #eee;font-size:13px;font-weight:600;color:#555;}
-
 .friend-group-header:active{background:#e9ecef;}
-
 .friend-group-toggle{font-size:10px;transition:transform .2s;display:inline-block;width:12px;text-align:center;}
-
 .friend-group-header.collapsed .friend-group-toggle{transform:rotate(-90deg);}
-
 .friend-group-count{margin-left:auto;font-size:11px;font-weight:400;color:#999;background:#fff;padding:1px 8px;border-radius:10px;}
-
 .friend-group-header.collapsed + .friend-group-items{display:none;}
-
 .friend-group-items{display:flex;flex-direction:column;gap:2px;}
-
 .contact-group-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 6px;border-radius:8px;cursor:pointer;white-space:nowrap;}
-
 .group-manage-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#f0f2f5;border-bottom:1px solid #e0e0e0;}
-
 .group-manage-btn{font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#555;}
-
 .group-manage-btn:active{background:#e0e0e0;}
-
 .group-select-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9999;display:none;align-items:center;justify-content:center;}
-
 .group-select-modal{background:#fff;border-radius:14px;padding:20px;width:300px;max-width:90vw;max-height:70vh;overflow-y:auto;}
-
 .group-select-title{font-size:16px;font-weight:600;margin-bottom:14px;text-align:center;}
-
 .group-select-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;margin-bottom:6px;border:2px solid transparent;transition:all .15s;}
-
 .group-select-item:active{background:#f0f0f0;}
-
 .group-select-item.selected{border-color:#4472C4;background:#e3f2fd;}
-
 .group-select-item .gs-icon{font-size:18px;}
-
 .group-select-item .gs-name{font-size:14px;font-weight:500;flex:1;}
-
 .manage-groups-list{margin:12px 0;}
-
 .manage-group-item{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #f0f0f0;}
-
 .manage-group-item .mg-icon{font-size:16px;}
-
 .manage-group-item .mg-name{flex:1;font-size:14px;}
-
 .manage-group-item .mg-del{font-size:12px;color:#e74c3c;cursor:pointer;padding:4px 8px;border:1px solid #e74c3c;border-radius:6px;}
-
 .add-group-input{display:flex;gap:8px;margin-top:12px;}
-
 .add-group-input input{flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;outline:none;}
-
 .add-group-input input:focus{border-color:#4472C4;}
-
 .empty-group-hint{text-align:center;color:#999;font-size:12px;padding:8px;}
 
 .header-sub.month-flash{animation:monthFlash .4s ease;}
-
 @keyframes monthFlash{0%{opacity:1;}40%{opacity:0.3;}100%{opacity:1;}}
-
 .stock-change{font-size:13px;font-weight:600;margin-left:8px;}
-
 .stock-row1{display:flex;align-items:baseline;gap:6px;margin-bottom:2px;}
-
 .stock-row2{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-light);margin-bottom:8px;}
-
 .stock-row2 .tag{margin-left:auto;}
-
+@keyframes slideDown{from{transform:translateY(-20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-60px);}}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+@keyframes promoFadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes promoPulse{0%{transform:scale(0.3);opacity:0;}60%{transform:scale(1.15);}100%{transform:scale(1);opacity:1;}}
+@keyframes promoSlideUp{from{transform:translateY(30px);opacity:0;}to{transform:translateY(0);opacity:1;}}
+/* v4.0.0: Auto-save indicator */
 .save-indicator{position:fixed;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:#27ae60;z-index:9999;opacity:0;pointer-events:none;transition:opacity .3s;}
-
 .save-indicator.show{opacity:1;animation:saveFlash .8s ease;}
-
 @keyframes saveFlash{0%{transform:scale(0.5);opacity:0;}50%{transform:scale(1.3);opacity:1;}100%{transform:scale(1);opacity:0;}}
 /* ====== V2: Event Choice Modal ====== */
-
+.choice-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:4500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+/* ====== V2: News Banner ====== */
+.news-banner{padding:12px 14px;border-radius:10px;margin-bottom:12px;font-size:12px;line-height:1.5;position:relative;overflow:hidden;word-break:break-word;}
+/* ====== V2: Tier Unlocks ====== */
+.tier-banner{padding:16px;border-radius:12px;margin-bottom:12px;text-align:center;background:linear-gradient(135deg,#f39c12,#e67e22);color:#fff;animation:tierPulse 2s ease-in-out;}
+@keyframes tierPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
+/* ====== V2: Forbes Celebration ====== */
+.forbes-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:6000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .5s;}
+@keyframes forbesZoom{0%{transform:scale(0) rotate(-10deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
+@keyframes forbesFade{0%{opacity:0;transform:translateY(20px);}100%{opacity:1;transform:translateY(0);}}
+@keyframes confettiFall{0%{opacity:1;transform:translateY(-100vh) rotate(0);}100%{opacity:0;transform:translateY(100vh) rotate(720deg);}}
+/* ====== V2: Luxury Cards ====== */
+.luxury-card{padding:14px;border-radius:12px;margin-bottom:10px;border:1px solid #eee;background:#fff;}
 .msg-item.msg-unread{background:linear-gradient(135deg,#fff5f5,#fff0f0);border-left:3px solid #e74c3c;}
-
 .msg-item.msg-unread .msg-nm{color:#e74c3c;font-weight:700;}
-
 .msg-item.msg-unread .msg-av{box-shadow:0 0 0 2px #e74c3c;}
-
 .msg-item.msg-read{opacity:.7;}
-
 .msg-item.msg-read .msg-nm{color:#999;}
-
 .msg-av .unread-dot{position:absolute;top:0;right:0;width:12px;height:12px;background:#e74c3c;border-radius:50%;border:2px solid #fff;}
-
 .msg-pv.msg-pv-unread{color:#333;font-weight:500;}
 /* v4.0.0: Message priority badge styles */
-
 .phone-badge.critical{background:#c0392b;animation:badgePulse 1.5s infinite;}
-
 .phone-badge.important{background:#e67e22;animation:badgePulse 2s infinite;}
-
 .phone-badge.normal{background:#3498db;}
-
 .phone-badge.critical::after{content:'!'}
-
 .phone-badge.important::after{content:'!'}
-
 @keyframes badgePulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);}}
 /* Trade input number spinner hide */
-
+#tradeInput::-webkit-inner-spin-button,#tradeInput::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+/* AI Chat Input Area */
+.chat-input-area{padding:10px 12px;background:#f7f7f7;border-top:1px solid #e5e5e5;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+/* Typing Indicator */
+.typing-indicator{display:inline-flex;gap:4px;padding:12px 16px;background:#fff;border-radius:18px;margin-left:8px;box-shadow:0 1px 2px rgba(0,0,0,.06);align-self:flex-start;border-bottom-left-radius:4px;}
+@keyframes typingBounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-8px);}}
 .moment-comments{margin-top:8px;padding:8px;background:#f7f7f7;border-radius:8px;}
-
 .moment-comment{display:flex;gap:6px;margin-bottom:6px;font-size:12px;line-height:1.4;}
-
 .moment-comment .mc-av{width:20px;height:20px;border-radius:10px;background:#e8e8e8;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;}
-
 .moment-comment .mc-nm{color:var(--primary);font-weight:500;}
-
 .moment-comment .mc-txt{color:#333;}
-
 .moment-player-comment{color:var(--primary)!important;font-weight:500;}
-
 .moment-likes{font-size:11px;color:var(--text-light);margin-top:4px;padding:4px 0;}
-
 .moment-input-wrap{display:flex;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #eee;}
-
 .moment-input{flex:1;border:1px solid #ddd;border-radius:16px;padding:6px 12px;font-size:12px;outline:none;}
-
 .moment-input:focus{border-color:var(--primary);}
-
 .moment-send{background:var(--primary);color:#fff;border:none;border-radius:16px;padding:6px 12px;font-size:12px;cursor:pointer;}
-
 .moment-ask{display:inline-block;margin-top:6px;font-size:11px;color:var(--primary);cursor:pointer;padding:3px 8px;border:1px solid var(--primary);border-radius:12px;}
-
 .moment-ask:active{background:rgba(52,152,219,.1);}
-
+@keyframes bubIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+/* Schedule tab */
 .schedule-item{display:flex;align-items:center;padding:12px 14px;background:#fff;border-radius:10px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:all .15s;position:relative;overflow:hidden;}
-
 .schedule-item:active{transform:scale(0.98);}
-
 .schedule-item.past{opacity:.5;}
-
 .schedule-item.current{border-left:3px solid var(--primary);background:#f0f8ff;}
-
 .schedule-item.future{border-left:3px solid #ddd;}
-
 .schedule-av{width:42px;height:42px;border-radius:21px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;margin-right:12px;}
-
 .schedule-bd{flex:1;min-width:0;}
-
 .schedule-nm{font-size:14px;font-weight:600;color:#333;}
-
 .schedule-desc{font-size:12px;color:var(--text-light);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-
 .schedule-meta{display:flex;gap:6px;margin-top:4px;}
-
 .schedule-tag{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500;}
-
 .schedule-cost{background:#fff3e0;color:#e65100;}
-
 .schedule-annual{background:#e8f5e9;color:#2e7d32;}
-
 .schedule-status{font-size:11px;color:#999;flex-shrink:0;text-align:right;margin-left:8px;}
-
 .schedule-status.done{color:#27ae60;}
-
 .schedule-status.cancelled{color:#e74c3c;}
-
 .schedule-empty{text-align:center;padding:40px 0;color:#999;}
-
 .schedule-section{font-size:11px;color:#999;padding:4px 16px;margin-top:8px;margin-bottom:4px;font-weight:500;}
-
 .relation-badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:8px;font-weight:600;margin-left:4px;}
-
 .relation-crush{background:#fce4ec;color:#e91e63;}
-
 .relation-dating{background:#f3e5f5;color:#9c27b0;}
-
 .relation-engaged{background:#fff3e0;color:#ff9800;}
-
 .relation-married{background:#ffebee;color:#f44336;}
-
 .relation-friend{background:#e3f2fd;color:#1976d2;}
-
 .relation-affair{background:#fce4ec;color:#c62828;}
 /* Schedule tab */
 /* ====== Life Events Card ====== */
-
+.event-item{display:flex;align-items:flex-start;gap:10px;padding:12px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;min-height:44px;}
+/* Recent Messages Card */
+.msg-preview-item{display:flex;align-items:center;gap:10px;padding:12px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;min-height:48px;}
+/* ====== Money Interaction System ====== */
+.money-decision-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
+/* ===== 玩法指南 ===== */
 .guide-header{background:linear-gradient(135deg,#3498db,#2980b9);color:#fff;padding:20px;text-align:center;flex-shrink:0;}
-
 .guide-header h2{font-size:20px;margin-bottom:6px;}
-
 .guide-header p{font-size:13px;opacity:0.8;}
-
 .guide-body{flex:1;overflow-y:auto;padding:16px 20px;}
-
 .guide-step{display:flex;gap:12px;margin-bottom:20px;align-items:flex-start;}
-
 .guide-num{width:28px;height:28px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
-
 .guide-text h4{font-size:15px;margin-bottom:4px;color:#333;}
-
 .guide-text p{font-size:13px;color:#666;line-height:1.5;}
-
 .guide-tip{background:#f0f8ff;border-left:3px solid var(--primary);padding:10px 12px;border-radius:0 8px 8px 0;margin:12px 0;font-size:12px;color:#555;line-height:1.5;}
-
 .guide-footer{padding:12px 20px;border-top:1px solid #eee;flex-shrink:0;display:flex;gap:10px;}
-
 .guide-footer .btn{flex:1;}
-
 .guide-page{display:none;}
-
 .guide-page.active{display:block;}
-
 .guide-dots{display:flex;justify-content:center;gap:6px;padding:10px 0;}
-
 .guide-dot{width:8px;height:8px;background:#ddd;border-radius:50%;transition:background .2s;}
-
 .guide-dot.active{background:var(--primary);}
-
 .help-fab{position:fixed;bottom:90px;right:16px;width:44px;height:44px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 12px rgba(52,152,219,0.4);cursor:pointer;z-index:500;transition:transform .2s;}
-
 .help-fab:active{transform:scale(0.9);}
 /* v4.0.0: Button shake + phone tab highlight for unread messages */
-
 @keyframes btnShake{
-
-0%,100%{transform:translateX(0)}
-
-10%,30%,50%,70%,90%{transform:translateX(-4px)}
-
-20%,40%,60%,80%{transform:translateX(4px)}
+  0%,100%{transform:translateX(0)}
+  10%,30%,50%,70%,90%{transform:translateX(-4px)}
+  20%,40%,60%,80%{transform:translateX(4px)}
 }
-
 .btn-shake{animation:btnShake .5s ease-in-out}
-
 #nextMonthBtn.btn-shake{border-color:#e74c3c!important;background:linear-gradient(135deg,#fff5f5,#ffe8e8)!important}
-
 .tab-phone-highlight{
   position:relative;
   color:#e74c3c!important;
   animation:btnShake .5s ease-in-out;
 }
-
 .tab-phone-highlight::after{
   content:'';
   position:absolute;
@@ -1299,307 +711,197 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','P
   box-shadow:0 0 6px rgba(231,76,60,.6);
   animation:tabPulse 1.5s infinite;
 }
-
 @keyframes tabPulse{
-
-0%,100%{transform:scale(1);opacity:1}
-
-50%{transform:scale(1.3);opacity:.6}
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(1.3);opacity:.6}
 }
 /* ===== Friend Grouping ===== */
-
+.friend-group-header{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#f8f9fa;cursor:pointer;user-select:none;border-bottom:1px solid #eee;font-size:13px;font-weight:600;color:#555;}
 .group-select-modal-overlay.show{display:flex;}
 
 /* ===== Tutorial Overlay ===== */
-
 .tut-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);z-index:10001;display:flex;align-items:center;justify-content:center;animation:tutFadeIn .25s ease;}
-
 @keyframes tutFadeIn{from{opacity:0}to{opacity:1}}
-
 .tut-card{background:#fff;border-radius:18px;padding:28px 24px 20px;max-width:340px;width:85%;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.18);animation:tutSlideUp .3s ease;}
-
 @keyframes tutSlideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-
 .tut-progress{display:flex;gap:5px;justify-content:center;margin-bottom:16px;min-height:6px;}
-
 .tut-progress-dot{height:5px;border-radius:3px;transition:all .3s ease;}
-
 .tut-step-num{text-align:center;font-size:12px;color:#4A90D9;font-weight:600;margin-bottom:10px;}
-
 .tut-title{font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:12px;line-height:1.4;}
-
 .tut-desc{font-size:14px;color:#555;line-height:1.7;margin-bottom:20px;}
-
 .tut-actions{display:flex;gap:10px;justify-content:center;margin-bottom:14px;}
-
 .tut-skip{text-align:center;font-size:12px;color:#aaa;cursor:pointer;padding:4px;transition:color .2s;}
-
 .tut-skip:hover{color:#666;text-decoration:underline;}
-
 .tut-skip-btn{position:absolute;top:14px;right:16px;background:none;border:1px solid #ddd;border-radius:6px;padding:3px 10px;font-size:11px;color:#999;cursor:pointer;transition:all .2s;}
-
 .tut-skip-btn:hover{background:#f5f5f5;color:#666;border-color:#ccc;}
-
 .tut-highlight{box-shadow:0 0 0 3px rgba(74,144,217,.5),0 0 12px rgba(74,144,217,.3) !important;position:relative;z-index:10002;border-radius:8px;transition:box-shadow .3s;}
 
 /* ===== V5: 职业选择界面 ===== */
-
 .career-selection-page{position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;}
-
 .career-card.current-career-dim{opacity:.5;pointer-events:none;}
-
 .career-select-container{max-width:480px;margin:0 auto;padding:20px 16px 40px;}
-
 .career-select-header{text-align:center;margin-bottom:24px;padding-top:20px;}
-
 .career-select-header h2{font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px;}
-
 .career-subtitle{font-size:13px;color:var(--text-light);line-height:1.5;}
-
 .career-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-
 .career-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 12px;cursor:pointer;transition:all .2s;text-align:center;border:2px solid transparent;}
-
 .career-card:active{transform:scale(0.96);border-color:var(--primary);}
-
 .career-card-icon{font-size:36px;margin-bottom:8px;}
-
 .career-card-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;}
-
 .career-card-desc{font-size:11px;color:var(--text-light);margin-bottom:8px;line-height:1.4;min-height:32px;}
-
 .career-card-salary{font-size:13px;font-weight:700;color:var(--warning);margin-bottom:8px;}
-
 .career-card-traits{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-bottom:8px;min-height:24px;}
-
 .career-trait-tag{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;background:#f0f2f5;color:var(--text-light);}
-
 .career-card-mult{font-size:11px;color:var(--primary);font-weight:500;}
 /* ===== V5: 工作情景弹窗 ===== */
-
 .work-scenario-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:1100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
-
 .work-scenario-overlay.show{opacity:1;pointer-events:auto;}
-
 .work-scenario-box{background:#fff;border-radius:16px;width:88%;max-width:380px;padding:24px 20px;transform:scale(0.85);transition:transform .3s;max-height:80vh;overflow-y:auto;}
-
 .work-scenario-overlay.show .work-scenario-box{transform:scale(1);}
-
 .ws-career-icon{font-size:32px;margin-bottom:4px;}
-
 .ws-career-label{font-size:12px;color:var(--text-light);margin-bottom:8px;}
-
 .ws-title{font-size:17px;font-weight:700;color:var(--text);margin-bottom:10px;line-height:1.4;}
-
 .ws-scene{font-size:13px;color:#555;line-height:1.7;margin-bottom:16px;text-align:left;}
-
 .ws-options{display:flex;flex-direction:column;gap:10px;}
-
 .ws-option{text-align:left;padding:12px 14px;border:1.5px solid #e8e8e8;border-radius:10px;cursor:pointer;transition:all .15s;background:#fafafa;}
-
 .ws-option:active{background:#e8f4fd;border-color:var(--primary);transform:scale(0.98);}
-
 .ws-option-text{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px;}
-
 .ws-option-effect{font-size:11px;color:var(--text-light);}
-
 .ws-result{margin-top:16px;padding:12px;background:#f0f9eb;border-radius:8px;font-size:13px;color:#333;line-height:1.6;text-align:left;display:none;}
-
 .ws-result.show{display:block;}
-
 .ws-close-btn{display:block;width:100%;margin-top:12px;padding:10px;background:#f5f5f5;border:none;border-radius:8px;font-size:14px;color:#666;cursor:pointer;}
 
 
 /* ====== Social System: Friend Detail ====== */
-
 .friend-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.75);z-index:6500;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
-
 .friend-detail-overlay.show{opacity:1;pointer-events:auto;}
-
 .friend-detail-card{background:#fff;border-radius:20px;width:90%;max-width:380px;max-height:85vh;overflow-y:auto;transform:translateY(30px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
-
 .friend-detail-overlay.show .friend-detail-card{transform:translateY(0);}
-
 .fd-header{text-align:center;padding:24px 20px 16px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:20px 20px 0 0;color:#fff;}
-
 .fd-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 10px;border:3px solid rgba(255,255,255,.4);}
-
 .fd-name{font-size:20px;font-weight:700;}
-
 .fd-company{font-size:13px;opacity:.8;margin-top:4px;}
-
 .fd-body{padding:16px 20px;}
-
 .fd-stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f5f5f5;font-size:13px;}
-
 .fd-stat-label{color:#999;}
-
 .fd-stat-value{font-weight:600;color:#333;}
-
 .fd-rel-bar-wrap{padding:10px 0;}
-
 .fd-rel-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;}
-
 .fd-rel-name{color:#666;}
-
 .fd-rel-val{font-weight:600;}
-
 .fd-bar{height:10px;background:#f0f0f0;border-radius:5px;overflow:hidden;}
-
 .fd-bar-fill{height:100%;border-radius:5px;transition:width .5s;}
-
 .rel-red{background:linear-gradient(90deg,#e74c3c,#ff6b6b);}
-
 .rel-yellow{background:linear-gradient(90deg,#f39c12,#f1c40f);}
-
 .rel-green{background:linear-gradient(90deg,#27ae60,#2ecc71);}
-
 .rel-purple{background:linear-gradient(90deg,#9b59b6,#c39bd3);}
-
 .fd-tags{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0;}
-
 .fd-tag{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:500;}
-
 .tag-tech{background:#d6eaf8;color:#1a5276;}
-
 .tag-finance{background:#fef9e7;color:#7d6608;}
-
 .tag-education{background:#fadbd8;color:#922b21;}
-
 .tag-creative{background:#fdebd0;color:#935116;}
-
 .tag-gov{background:#d4efdf;color:#1e8449;}
-
 .tag-sales{background:#d6eaf8;color:#1a5276;}
-
 .tag-legal{background:#f5eef8;color:#6c3483;}
-
 .tag-manager{background:#fadbd8;color:#922b21;}
-
 .tag-investor{background:#fef9e7;color:#7d6608;}
-
+.tag-orange{background:#fdebd0;color:#935116;}
 .tag-golden{background:#fef9e7;color:#7d6608;}
-
+.tag-red{background:#fadbd8;color:#922b21;}
+.tag-blue{background:#d6eaf8;color:#1a5276;}
+.tag-green{background:#d5f5e3;color:#1e8449;}
 .fd-notes{margin-top:10px;padding:10px;background:#f8f9fa;border-radius:8px;font-size:13px;color:#555;line-height:1.5;min-height:40px;}
-
 .fd-actions{display:flex;gap:10px;padding:12px 20px 20px;}
-
 .fd-actions .btn{flex:1;}
-
 .contact-detail-btn{display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:14px;transition:background .15s;flex-shrink:0;}
-
 .contact-detail-btn:active{background:#e8f4fd;}
 
+
 .avatar-img{width:100%;height:100%;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.15);}
-
 .msg-preview-avatar-img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #e0e0e0;flex-shrink:0;}
-
 .icon-img{width:100%;height:100%;object-fit:cover;border-radius:4px;}
-
 .friend-avatar-img{width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid #fff;}
 
 /* ===== QQ风格视觉改造 V6.4 ===== */
-
 :root{--qq-blue:#12B7F5;--qq-blue-dark:#0990C8;--qq-pink:#FF6B9D;--qq-orange:#FF9F43;--qq-purple:#A55EEA;--qq-green:#26DE81;--qq-gradient:linear-gradient(135deg,#12B7F5 0%,#A55EEA 100%);--card-radius:18px;--shadow-qq:0 4px 16px rgba(18,183,245,.18);}
 
 /* 标题栏渐变 */
-
 .header{background:var(--qq-gradient) !important;box-shadow:0 2px 8px rgba(0,0,0,.15);}
 
 /* QQ风卡片 */
-
 .card{border-radius:var(--card-radius) !important;box-shadow:var(--shadow-qq) !important;border:none !important;}
 
 /* QQ风按钮 */
-
 .btn{border-radius:20px !important;font-weight:600 !important;transition:all .2s;border:none !important;}
-
 .btn-primary{background:var(--qq-blue) !important;color:#fff;box-shadow:0 4px 0 #0990C8;}
-
 .btn-success{background:var(--qq-green) !important;color:#fff;box-shadow:0 4px 0 #1EA85E;}
-
 .btn-danger{background:var(--qq-pink) !important;color:#fff;box-shadow:0 4px 0 #D94E7A;}
-
 .btn-warning{background:var(--qq-orange) !important;color:#fff;box-shadow:0 4px 0 #E08A20;}
-
 .btn:active{transform:translateY(2px) !important;box-shadow:0 2px 0 rgba(0,0,0,.2) !important;}
 
 /* 聊天气泡QQ风格 */
-
 .chat-bubble{background:#F0F8FF !important;border-radius:18px 18px 4px 18px !important;padding:12px 16px !important;margin:8px 0;max-width:80%;}
-
 .chat-bubble.npc{background:#F5F5F5 !important;border-radius:18px 18px 18px 4px !important;}
-
 .chat-bubble.player{background:var(--qq-blue) !important;color:#fff !important;margin-left:auto;}
 
 /* 头像通用样式 */
-
 img[class*="avatar"]{transition:transform .2s;cursor:pointer;}
-
 img[class*="avatar"]:hover{transform:scale(1.08);}
 
 /* QQ风格属性条 */
-
 .attr-bar{height:8px !important;border-radius:4px !important;background:#E8E8E8 !important;overflow:hidden;}
-
 .attr-bar-fill{border-radius:4px !important;}
 
 /* QQ风月份卡片 */
-
 .month-card{background:#fff;border-radius:var(--card-radius);padding:20px;box-shadow:var(--shadow-qq);margin-bottom:16px;}
 
 /* Tab栏QQ风格 */
-
 .tab-item.active{color:var(--qq-blue) !important;font-weight:600;}
-
 .tab-item .tab-icon{transition:transform .2s;}
-
 .tab-item.active .tab-icon{transform:scale(1.15);}
 
 /* 弹窗卡片 */
-
 .modal-box{border-radius:var(--card-radius) !important;border:none !important;box-shadow:0 8px 32px rgba(0,0,0,.2) !important;}
 
 /* 标签QQ风格 */
-
 .tag{border-radius:10px !important;padding:3px 10px !important;font-weight:600 !important;}
 
 /* 渐变背景装饰 */
-
 body{background:linear-gradient(180deg,#E8F4FF 0%,#F5F0FF 100%) fixed !important;}
-
 .app{background:transparent !important;}
 /* 朋友圈发帖 */
-
 .moments-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid #f0f0f0;}
-
 .moments-header span{font-size:16px;font-weight:600;color:#333;}
-
 .moments-post-btn{background:#07c160;color:#fff;border:none;border-radius:18px;padding:6px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px;}
-
 .moments-post-btn:active{opacity:.7;}
-
 .moments-panel{display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:#f5f5f5;z-index:200;flex-direction:column;}
-
 .moments-panel.show{display:flex;}
-
 .moments-panel-hdr{display:flex;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid #eee;gap:12px;}
-
 .moments-panel-hdr button{background:none;border:none;font-size:16px;cursor:pointer;padding:4px 8px;color:#07c160;}
-
 .moments-panel-hdr .hdr-title{flex:1;text-align:center;font-size:16px;font-weight:600;}
-
 .moments-ta{width:100%;border:none;outline:none;padding:16px;font-size:15px;resize:none;flex:1;background:#fff;min-height:120px;}
-
 .moments-char-count{text-align:right;padding:4px 12px;font-size:12px;color:#999;background:#fff;}
-
 .moments-ai-bar{display:flex;gap:8px;padding:10px 16px;background:#fff;border-top:1px solid #eee;}
-
 .moments-ai-btn{flex:1;background:#f0f0f0;border:1px solid #ddd;border-radius:8px;padding:8px;font-size:13px;cursor:pointer;text-align:center;}
-
 .moments-ai-btn:active{background:#e0e0e0;}
-
 .moments-ai-btn .ai-icon{margin-right:4px;}
+
+/* ===== 点击区域优化 ===== */
+.tab-item{min-height:48px;}
+.btn{min-height:44px;min-width:44px;}
+.btn-sm{min-height:36px;}
+.invest-tab{min-height:44px;}
+.pet-subtab{min-height:44px;}
+.pet-shop-item{min-height:120px;}
+.contact-item{min-height:52px;}
+.msg-item{min-height:52px;}
+.list-item{min-height:48px;}
+.rank-item{min-height:48px;}
+.event-item{min-height:44px;}
+.msg-preview-item{min-height:48px;}
+.chat-opt{min-height:44px;}
+.choice-option{min-height:52px;}
 </style>
 </head>
 <body>
@@ -1912,10 +1214,9 @@ body{background:linear-gradient(180deg,#E8F4FF 0%,#F5F0FF 100%) fixed !important
   <div class="forbes-sub" id="forbesSub"></div>
 </div>
 
->
+<div class="save-indicator" id="saveIndicator" style="position:fixed;top:10px;right:10px;background:rgba(39,174,96,0.9);color:#fff;padding:4px 12px;border-radius:12px;font-size:11px;z-index:9999;opacity:0;transition:opacity 0.3s;">已保存</div>
 
 <script>
-
 function _avt(a,c){return a&&a.indexOf('img/')===0?'<img src="'+a+'" class="'+(c||'avatar-img')+'">':a||'👤'}
 function _ic(a){return a&&a.indexOf('img/')===0?'<img src="'+a+'" class="icon-img">':a||'📌'}
 // ========== 数据定义 ==========
@@ -2543,7 +1844,7 @@ const LUXURY_ITEMS=[
 const FORBES_NAMES=['马化腾','马云','钟睒睒','张一鸣','黄峥','李嘉诚','刘强东','雷军','王健林','李彦宏'];
 
 // ===== NPC System =====
-const NPCS={mom:{name:'妈妈',avatar:'img/avatars/mom.jpg'},dad:{name:'爸爸',avatar:'img/avatars/dad.jpg'},boss:{name:'张总',avatar:'img/avatars/boss.jpg'},colleague:{name:'小李',avatar:'img/avatars/colleague.jpg'},hr:{name:'HR王姐',avatar:'img/avatars/boss.jpg'},bestie:{name:'老王',avatar:'img/avatars/classmate.jpg'},classmate:{name:'小张',avatar:'img/avatars/classmate.jpg'},mysterious:{name:'神秘人',avatar:'img/avatars/zhang_chief.jpg'},banker:{name:'刘经理',avatar:'img/avatars/banker.jpg'},realtor:{name:'小陈',avatar:'img/avatars/colleague.jpg'},spouse:{name:'小徐',avatar:'img/avatars/spouse.jpg'},child:{name:'孩子',avatar:'img/avatars/classmate.jpg'},delivery:{name:'快递',avatar:'img/avatars/colleague.jpg'},system:{name:'系统',avatar:'img/avatars/zhang_chief.jpg'},wife:{name:'小徐',avatar:'img/avatars/wife.jpg'},husband:{name:'小徐',avatar:'img/avatars/husband.jpg'},gymCoach:{name:'健身教练',avatar:'img/avatars/dad.jpg'},neighbor:{name:'邻居老赵',avatar:'img/avatars/mom.jpg'},exColleague:{name:'前同事小周',avatar:'img/avatars/colleague.jpg'},mentor:{name:'导师李教授',avatar:'img/avatars/courseTeacher.jpg'},scammer:{name:'神秘号码',avatar:'img/avatars/zhang_chief.jpg'}};
+const NPCS={mom:{name:'妈妈',avatar:'img/avatars/mom.png'},dad:{name:'爸爸',avatar:'img/avatars/dad.png'},boss:{name:'张总',avatar:'img/avatars/boss.png'},colleague:{name:'小李',avatar:'img/avatars/colleague.png'},hr:{name:'HR王姐',avatar:'img/avatars/hr.png'},bestie:{name:'老王',avatar:'img/avatars/bestie.png'},classmate:{name:'小张',avatar:'img/avatars/classmate.png'},mysterious:{name:'神秘人',avatar:'img/avatars/mysterious.png'},banker:{name:'刘经理',avatar:'img/avatars/banker.png'},realtor:{name:'小陈',avatar:'img/avatars/realtor.png'},spouse:{name:'小徐',avatar:'img/avatars/spouse.png'},child:{name:'孩子',avatar:'img/avatars/child.png'},delivery:{name:'快递',avatar:'img/avatars/delivery.png'},system:{name:'系统',avatar:'img/avatars/system.png'},wife:{name:'小徐',avatar:'img/avatars/spouse.png'},husband:{name:'小徐',avatar:'img/avatars/spouse.png'},gymCoach:{name:'健身教练',avatar:'img/avatars/gymCoach.png'},neighbor:{name:'邻居老赵',avatar:'img/avatars/neighbor.png'},exColleague:{name:'前同事小周',avatar:'img/avatars/exColleague.png'},mentor:{name:'导师李教授',avatar:'img/avatars/mentor.png'},scammer:{name:'神秘号码',avatar:'🎭'}};
 const PHONE_MESSAGES=[
 // ====== FAMILY ======
 {id:'mom_nag',npc:'mom',type:'wechat',ageMin:23,ageMax:35,chance:0.12,cooldown:24,rounds:[
@@ -2945,7 +2246,8 @@ function showModal({title,content,showCancel,confirmText,cancelText,success}){
   overlay.style.pointerEvents='auto';
   overlay.style.visibility='visible';
   overlay.style.opacity='';
-  }
+  console.log('[modal] shown:',title);
+}
 function hideModal(){
   var o=document.getElementById('modalOverlay');
   if(o){
@@ -2953,15 +2255,16 @@ function hideModal(){
     o.style.opacity='0';
     o.style.pointerEvents='none';
     o.style.visibility='hidden';
-    } else {
-    }
+    console.log('[modal] hidden');
+  } else {
+    console.error('[modal] overlay not found!');
+  }
 }
 function closeModalBg(e){
   var overlay=document.getElementById('modalOverlay');
   if(!overlay) return;
-  // 点击背景或modal-box空白区域都关闭弹窗（按钮除外）
-  if(e.target===overlay || e.target.closest('.modal-box')){
-    if(e.target.closest('button')||e.target.closest('a')||e.target.closest('[data-modal-action]')||e.target.closest('input')) return;
+  // 修复：只在点击背景时关闭弹窗，点击内容区域不关闭
+  if(e.target===overlay){
     hideModal();
   }
 }
@@ -2982,9 +2285,11 @@ document.addEventListener('click', function(e){
       if(action==='confirm') success({confirm:true, cancel:false});
       else if(action==='cancel') success({confirm:false, cancel:true});
     } catch(err) {
-      }
+      console.error('[modal] success callback error:', err);
+    }
   }
-  }, true);
+  console.log('[modal] delegation fired:', action);
+}, true);
 
 let toastTimer=null;
 function showToast(msg,dur){const el=document.getElementById('toastEl');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),dur||1800);}
@@ -3001,6 +2306,7 @@ function showFloatText(text,positive){
 function switchTab(name){
   const pageEl=document.getElementById('page-'+name);
   if(!pageEl){
+    console.warn('[switchTab] page-'+name+' not found');
     return;
   }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -3233,7 +2539,7 @@ function selectCareer(careerId,isInternship){
 function initStockPrices(){STOCKS.forEach(s=>{if(!G.stockPrices[s.code])G.stockPrices[s.code]=s.basePrice;});}
 
 // ========== 刷新UI ==========
-function refreshAll(){refreshLife(););refreshHeader(););updatePhoneBadge(););}
+function refreshAll(){refreshLife();console.log('[refreshAll] after refreshLife, page-life:',!!document.getElementById('page-life'));refreshHeader();console.log('[refreshAll] after refreshHeader, page-life:',!!document.getElementById('page-life'));updatePhoneBadge();console.log('[refreshAll] after updatePhoneBadge, page-life:',!!document.getElementById('page-life'));}
 function refreshLearning(){
   const el=document.getElementById('learningList');if(!el)return;
   if(!G.learning)G.learning={completed:[],studying:null,studyEndMonth:0};
@@ -3826,7 +3132,7 @@ async function advanceMonth(){
     if(G._recentEvents)G._recentEvents.push('🥚彩蛋：'+egg.text.replace(/[\u{1F300}-\u{1FFFF}]/gu,'').substring(0,20));
   }
   // Phone triggers
-  if(!G.gameOver){initPhoneState();triggerFollowUps();triggerPhoneMessages();processScheduledDates().catch(e=>);triggerParentHelp();if(Math.random()<0.50)triggerAIMoments().catch(()=>{});if(Math.random()<0.40)triggerMoments();generateNotifications();generateGossipEvent();triggerGathering();}
+  if(!G.gameOver){initPhoneState();triggerFollowUps();triggerPhoneMessages();processScheduledDates().catch(e=>console.error("scheduledDates error:",e));triggerParentHelp();if(Math.random()<0.50)triggerAIMoments().catch(()=>{});if(Math.random()<0.40)triggerMoments();generateNotifications();generateGossipEvent();triggerGathering();}
   // Social system: monthly trigger
   if(!G.gameOver && G.totalMonths >= G.lastSocialCheck + 1){ triggerMonthlySocial(); G.lastSocialCheck = G.totalMonths; }
   // 社交拓展：每月有概率触发偶遇场景
@@ -4074,7 +3380,7 @@ function showOfferDetail(offerId){
 async function fastForward(years){
   G.events=[];
   G.__fastForwarding=true;
-  for(let i=0;i<years*12;i++){if(G.gameOver)break;await advanceMonth();}
+  for(let i=0;i<years*12;i++){if(G.gameOver)break;if(G._pendingDecision)break;await advanceMonth();}
   G.__fastForwarding=false;
   saveGame();refreshAll();checkAchievements();
   if(G.gameOver)setTimeout(()=>showGameOver(),500);
@@ -4145,7 +3451,7 @@ async function generateWorkScenario(){
         }
       }
     }
-  }catch(e){}
+  }catch(e){console.error('Work scenario AI error:',e);}
   // 兜底：使用模板情景
   showWorkScenarioModal(getFallbackWorkScenario(career,job),career);
 }
@@ -5436,7 +4742,7 @@ const __pageLifeObserver=new MutationObserver((mutations)=>{
   mutations.forEach(m=>{
     m.removedNodes.forEach(n=>{
       if(n.id==='page-life'||(n.querySelector&&n.querySelector('#page-life'))){
-        .stack);
+        console.error('[Observer] page-life removed! Stack:',new Error().stack);
       }
     });
   });
@@ -5448,6 +4754,7 @@ setTimeout(()=>{
 
 function doRebirth(){
   if(!document.getElementById('page-life')){
+    console.error('[doRebirth] page-life missing at start! bodyHTML length:',document.body.innerHTML.length);
     showToast('页面状态异常，正在刷新...','warning',1500);
     setTimeout(()=>{location.href=location.href.split('?')[0]+'?t='+Date.now();},1500);
     return;
@@ -5455,26 +4762,42 @@ function doRebirth(){
   showModal({title:'确定重生？',content:'当前人生将结束，已购买的升级将在下一轮生效。\n\n当前LP：'+(G.legacyPoints||0),success(res){
     if(res.confirm){
       try{
+        console.log('[doRebirth] step1: clearGame');
         clearGame();
+        console.log('[doRebirth] step2: defaultState');
         G=defaultState();
+        console.log('[doRebirth] step3: initStockPrices');
         initStockPrices();
+        console.log('[doRebirth] step4: saveGame');
         saveGame();
+        console.log('[doRebirth] step5: closeRebirthPanel');
         closeRebirthPanel();
+        console.log('[doRebirth] step6: refreshAll');
         refreshAll();
-        );
+        console.log('[doRebirth] step7: switchTab, page-life exists:',!!document.getElementById('page-life'));
         // 保险：如果page-life丢失，强制恢复gameApp显示
         const _ga=document.getElementById('gameApp');
         if(_ga) _ga.style.display='flex';
         const _pl=document.getElementById('page-life');
         if(!_pl){
+          console.warn('[doRebirth] page-life still missing, forcing reload');
           showToast('正在恢复页面...','warning',800);
           setTimeout(()=>{location.href=location.href.split('?')[0]+'?t='+Date.now();},800);
           return;
         }
         switchTab('life');
-        showToast('♻️ 重生成功！获得 0 LP，继承上一轮加成');
+        // 修复：计算重生LP而不是硬编码0
+        const _total=calcTotalAsset();
+        const _goJobs=getCareerJobs();
+        const _goJob=_goJobs[G.jobIndex]||_goJobs[0];
+        const _careerLP=G.selfEmployed?G.businesses.length*15:(_goJob?_goJob.level*10:0);
+        const _lp=Math.floor(_total/100000)+G.achievements.length*5+_careerLP;
+        G.legacyPoints=(G.legacyPoints||0)+_lp;
+        saveLegacy();
+        showToast('♻️ 重生成功！获得 '+_lp+' LP，继承上一轮加成');
         checkAchievements();
       }catch(e){
+        console.error('doRebirth error:',e);
         showToast('重生出错，请重试');
       }
     }
@@ -5556,10 +4879,10 @@ function closeGuide(){
       Object.keys(G.phone.chatHistory).forEach(nid=>{
         const h=G.phone.chatHistory[nid];
         if(h&&h.length>0){
-          h.forEach(m=>{if(m)npc={};}); // break npc ref to clear unread
+          h.forEach(m=>{if(m)m._read=true;}); // 标记为已读而不是删除
         }
       });
-      G.phone.chatHistory={};
+      // 修复：不清空聊天记录，只标记已读
     }
   }
   // Clear pending decision
@@ -5790,59 +5113,59 @@ const CHAT_TOPICS=[
 
 // ===== NPC人设系统 =====
 const NPC_PERSONALITIES={
-  mom:{name:'妈妈',avatar:'img/avatars/mom.jpg',traits:['唠叨','关心','爱攀比','节俭','护犊子'],
+  mom:{name:'妈妈',avatar:'img/avatars/mom.png',traits:['唠叨','关心','爱攀比','节俭','护犊子'],
     greetings:[{text:'妈，最近咋样？',tag:'日常'},{text:'妈，我工作上遇到点事',tag:'求助'},{text:'妈，我赚了点钱',tag:'分享'},{text:'妈，我想你了',tag:'温情'}],
     responses:{日常:['最近还行，就是想你了','你吃了吗？别老不吃早饭','你三叔家儿子又升职了'],求助:['怎么了？跟妈说说','工作上的事别太往心里去','实在不行就换一个'],分享:['赚了就好，但别太张扬','留着别乱花，以后用钱的地方多','你三叔家儿子也赚了不少呢'],温情:['妈也想你啊，有空回来看看','你过得好妈就放心了','别光想，回来吃顿饭']},
     followups:['对了，你二舅家闺女下个月结婚你去不去？','你张婶又给你介绍对象了...','隔壁王阿姨问我你有没有女朋友','你什么时候回来吃饭？','你小时候啊，天天骑我脖子上...']},
-  dad:{name:'爸爸',avatar:'img/avatars/dad.jpg',traits:['沉默','严厉','偶尔温情','报喜不报忧'],
+  dad:{name:'爸爸',avatar:'img/avatars/dad.png',traits:['沉默','严厉','偶尔温情','报喜不报忧'],
     greetings:[{text:'爸，身体咋样？',tag:'日常'},{text:'爸，想跟你聊聊',tag:'谈心'},{text:'爸，我升职了',tag:'分享'}],
     responses:{日常:['挺好的，别操心','老样子','工作忙就不用老打电话'],谈心:['怎么了？','说吧','工作不顺心？'],分享:['嗯，好好干','别骄傲','继续努力']},
     followups:['你妈天天念叨你，有空多回来','你小时候啊，天天骑我脖子上...','人这辈子起起落落正常，别太在意','钱不够花跟爸说，虽然不多','我当年也被裁员过，后来不也挺过来了']},
-  bestie:{name:'老王',avatar:'img/avatars/classmate.jpg',traits:['八卦','直爽','爱喝酒','损友','讲义气'],
+  bestie:{name:'老王',avatar:'img/avatars/bestie.png',traits:['八卦','直爽','爱喝酒','损友','讲义气'],
     greetings:[{text:'老王，最近有啥八卦？',tag:'八卦'},{text:'老王，出来喝一杯？',tag:'喝酒'},{text:'老王，我跟你说个事',tag:'倾诉'}],
     responses:{八卦:['卧槽你终于问了！我憋好久了','来来来，坐好听我说','嘿嘿，这个你可得做好心理准备'],喝酒:['走起！老地方烧烤摊','必须的，我正愁没人陪','等我，我带两瓶好酒'],倾诉:['说！我听着呢','咋了兄弟，谁欺负你了','别憋着，说出来痛快']},
     followups:['咱高中班花李婷离婚了你知道吗？','还有个更炸裂的，咱班长现在做微商...','隔壁老刘被他老婆抓包了！','你们公司那个谁，好像跟前台有情况','我有个赚钱路子，币圈的，来不来？']},
-  colleague:{name:'小李',avatar:'img/avatars/colleague.jpg',traits:['谨慎','消息灵通','爱吐槽','职场生存'],
+  colleague:{name:'小李',avatar:'img/avatars/colleague.png',traits:['谨慎','消息灵通','爱吐槽','职场生存'],
     greetings:[{text:'小李，公司最近啥情况？',tag:'打听'},{text:'小李，今天那个会你怎么看？',tag:'吐槽'},{text:'小李，我打算跳槽',tag:'秘密'}],
     responses:{打听:['别提了，又在裁员呢','暂时还行，但老板心情不太好','隔壁组走了好几个人了'],吐槽:['你也看到了吧？老板今天又发飙了','我觉得他是被大老板骂了拿我们撒气','唉，职场就这样'],秘密:['真的？你有目标了吗','别声张，我帮你留意','你走了我咋办']},
     followups:['下个月团建你去不去？','市场部Sarah跟研发部Mike...','听说年终奖要打折','老板最近在面试新人，你小心点','你知道谁要跳槽吗？']},
-  boss:{name:'张总',avatar:'img/avatars/boss.jpg',traits:['圆滑','惜字如金','画饼','施压','偶尔真诚'],
+  boss:{name:'张总',avatar:'img/avatars/boss.png',traits:['圆滑','惜字如金','画饼','施压','偶尔真诚'],
     greetings:[{text:'张总，最近工作上想跟您聊聊',tag:'汇报'},{text:'张总，想谈谈我的发展',tag:'谈发展'},{text:'张总，有个想法想跟您说',tag:'提案'}],
     responses:{汇报:['嗯，说','你最近表现还行，继续保持','有什么问题直接说'],谈发展:['你有想法是好事','好好干，机会是给有准备的人的','年底评估的时候我帮你争取'],提案:['哦？说来听听','想法是好的，但要考虑实际','你先做个方案出来']},
     followups:['下个季度有个大项目，你有兴趣吗？','李副总那边有点小动作，你注意一下','你是我看好人，好好干','公司准备上市，你要是能扛住这一波...','说实话，我看好你']},
-  classmate:{name:'小张',avatar:'img/avatars/classmate.jpg',traits:['攀比','怀旧','消息灵通','爱炫耀'],
+  classmate:{name:'小张',avatar:'img/avatars/classmate.png',traits:['攀比','怀旧','消息灵通','爱炫耀'],
     greetings:[{text:'小张，最近混得咋样？',tag:'叙旧'},{text:'小张，同学聚会搞起来？',tag:'聚会'},{text:'小张，你还记得XX吗？',tag:'回忆'}],
     responses:{叙旧:['还行吧，就是忙','比上不足比下有余','你呢？听说你混得不错'],聚会:['好啊！我来组织','必须的，好久没聚了','我看看时间，定好了通知你'],回忆:['记得啊！怎么突然提起他','你说那个谁啊，我现在还经常想起','哈哈，那时候的事...']},
     followups:['听说王磊现在做直播带货，月入百万','你还记得班花陈雪吗？她好像离婚了','咱班长现在做微商，天天刷屏','刘强现在送外卖，上次碰到的','有个同学找我借钱，你说借不借？']},
-  banker:{name:'刘经理',avatar:'img/avatars/banker.jpg',traits:['专业','殷勤','推销','信息差'],
+  banker:{name:'刘经理',avatar:'img/avatars/banker.png',traits:['专业','殷勤','推销','信息差'],
     greetings:[{text:'刘经理，最近有什么好产品？',tag:'理财'},{text:'刘经理，我想了解一下贷款',tag:'贷款'},{text:'刘经理，最近市场怎么看？',tag:'市场'}],
     responses:{理财:['朱先生您好！正好有款产品适合您','最近我们行有款新产品，年化4.5%','保本保息的，很适合稳健型客户'],贷款:['您目前信用评级很好，利率可以给到最低','首套房3.85%，公积金还能再低','需要的话我帮您算个额度'],市场:['最近市场波动比较大，建议分散投资','我们几个大客户在抄底某个板块','具体我不能多说，您自己判断']},
     followups:['还有一款挂钩黄金的结构性存款，最高8%','如果您有闲置资金，可以考虑大额存单','最近黄金涨得厉害，要不要配置一点？','朱先生，私下跟您说，几个大客户最近在...','基金定投其实也不错，要不要了解一下？']},
-  realtor:{name:'小陈',avatar:'img/avatars/colleague.jpg',traits:['热情','夸大','逼单','信息量大'],
+  realtor:{name:'小陈',avatar:'img/avatars/realtor.png',traits:['热情','夸大','逼单','信息量大'],
     greetings:[{text:'小陈，最近房价咋样？',tag:'行情'},{text:'小陈，有啥好盘推荐？',tag:'看房'},{text:'小陈，我想投资房产',tag:'投资'}],
     responses:{行情:['朱哥！正好有事跟您说','最近市场回暖了，好多客户在看房','现在不买以后更贵'],看房:['朱哥！我手上正好有几套好房源','有套特别适合您，业主急售降价20万！','过了这村没这店了'],投资:['朱哥有眼光！新区那边有个商铺','回报率8%，月租金能到5000','好多客户都买了，稳赚不赔']},
     followups:['120平只要280万，去年同户型卖到320万','还有一套学区房，业主急售，价格好商量','要不要周末去看看？我安排专车接送','这套真的很抢手，今天已经三个人问了','首付可以分期，要不要了解一下？']},
-  neighbor:{name:'邻居老赵',avatar:'img/avatars/mom.jpg',traits:['热心','八卦','操心','小区万事通'],
+  neighbor:{name:'邻居老赵',avatar:'img/avatars/neighbor.png',traits:['热心','八卦','操心','小区万事通'],
     greetings:[{text:'赵叔，最近身体咋样？',tag:'日常'},{text:'赵叔，小区有啥新鲜事？',tag:'八卦'},{text:'赵叔，您看这个小区还行吗？',tag:'咨询'}],
     responses:{日常:['挺好的，就是闲得慌','你工作忙不忙？我看你天天早出晚归','年轻人拼是好事，但也得注意身体'],八卦:['小朱！出大事了！物业经理卷钱跑了','楼上那对小两口天天吵架','对面楼老刘被他老婆抓包了'],咨询:['这小区还行，就是物业差点意思','住久了就有感情了','你要是买，我帮你砍价']},
     followups:['听说卷了两百多万，好多业主气疯了','楼上那对昨晚又摔东西了','隔壁老王家儿子考上公务员了','你三姑问你啥时候带女朋友回来','你看对面楼老王，看着老实...']},
-  exColleague:{name:'前同事小周',avatar:'img/avatars/colleague.jpg',traits:['怀旧','感慨','信息量大','爱比较'],
+  exColleague:{name:'前同事小周',avatar:'img/avatars/exColleague.png',traits:['怀旧','感慨','信息量大','爱比较'],
     greetings:[{text:'小周，好久不见！',tag:'叙旧'},{text:'小周，以前公司咋样了？',tag:'打听'},{text:'小周，你现在在哪高就？',tag:'近况'}],
     responses:{叙旧:['老朱！好久不见！你怎么样','想死我了！最近在哪发财','哎呀，终于联系上了'],打听:['别提了，又裁员了','走了好几个人，现在人心惶惶','老板还是那个德行'],近况:['还行，在一家新公司','在创业呢，折腾折腾','刚跳槽，还在适应']},
     followups:['咱以前那公司，又裁员了！','你还记得咱以前那个总监吗？被猎头挖走了','最惨的是小李，刚买了房就被裁了','所以说打工没安全感，还是得有副业','我听说前公司上市了，可惜没拿到期权']},
-  mentor:{name:'导师李教授',avatar:'img/avatars/courseTeacher.jpg',traits:['睿智','温和','惜字如金','有深度'],
+  mentor:{name:'导师李教授',avatar:'img/avatars/mentor.png',traits:['睿智','温和','惜字如金','有深度'],
     greetings:[{text:'李老师，想请教您一个问题',tag:'请教'},{text:'李老师，最近在忙什么？',tag:'问候'},{text:'李老师，我遇到人生困惑了',tag:'迷茫'}],
     responses:{请教:['嗯，说来听听','你这个问题问得好','这个嘛...要看你怎么想'],问候:['还行，在做研究','你呢？最近怎么样','有空来坐坐'],迷茫:['人生困惑是正常的','你先想想，你真正想要什么','35岁之前拼能力，35岁之后拼选择']},
     followups:['记住，不要为了短期利益放弃长期价值','你现在做的每件事，都在为10年后的自己铺路','我最近在研究一个新课题，你有兴趣参与吗？','每个人答案不同，但核心是不后悔','你现在最大的困惑是什么？']},
-  gymCoach:{name:'健身教练',avatar:'img/avatars/dad.jpg',traits:['热情','直率','爱劝人健身','八卦体质'],
+  gymCoach:{name:'健身教练',avatar:'img/avatars/gymCoach.png',traits:['热情','直率','爱劝人健身','八卦体质'],
     greetings:[{text:'教练，最近有啥训练计划？',tag:'训练'},{text:'教练，健身房有啥八卦？',tag:'八卦'},{text:'教练，我最近状态不好',tag:'吐槽'}],
     responses:{训练:['兄弟来了！最近体脂有点高啊','得加点有氧了，不然白练','今天练哪个部位？'],八卦:['来来来，坐好听我说','这个你可得做好心理准备','嘿嘿，健身房的瓜可多了'],吐槽:['咋了兄弟？说出来','别憋着，练一场就好了','谁惹你了？']},
     followups:['隔壁健身房那个教练，带学员跑了','那个富婆每月花2万请私教，结果...','那个天天来练的大哥，据说欠了一屁股债','选教练得选靠谱的，像我这种不多了','你上次说要减脂，进展咋样了？']},
-  scammer:{name:'神秘号码',avatar:'img/avatars/zhang_chief.jpg',traits:['诈骗','套路','紧迫感'],
+  scammer:{name:'神秘号码',avatar:'🎭',traits:['诈骗','套路','紧迫感'],
     greetings:[{text:'你好？谁啊？',tag:'接电话'}],
     responses:{接电话:['您好，这里是XX银行，您的账户存在异常','恭喜您中奖100万！请先缴纳手续费','您的快递丢失了，需要理赔']},
     followups:['请按1转接人工客服...','请把资金转入安全账户...','需先缴纳手续费5000元...']},
-  spouse:{name:'小徐',avatar:'img/avatars/spouse.jpg',traits:['亲密','唠叨','需要陪伴','偶尔吵架'],
+  spouse:{name:'小徐',avatar:'img/avatars/spouse.png',traits:['亲密','唠叨','需要陪伴','偶尔吵架'],
     greetings:[{text:'亲爱的，今天辛苦了',tag:'温情'},{text:'我们聊聊吧',tag:'谈心'},{text:'今晚吃什么？',tag:'日常'},{text:'最近压力好大',tag:'倾诉'}],
     responses:{温情:['你回来啦！','你也是，别太累了','有你在真好'],谈心:['怎么了？','你说，我听着','我们确实该好好聊聊'],日常:['你想吃什么？我做','出去吃吧，我请客','冰箱里有菜，随便做点'],倾诉:['怎么了？跟我说说','不管怎样我都在','别太累了，身体要紧']},
     followups:['你最近回来就玩手机，也不陪我说话','我们能不能换个大点的房子？','你记不记得今天是什么日子？','我妈说让我们周末回去吃饭','有你在真好，不管怎样']},
@@ -6342,19 +5665,19 @@ function applyWorkEffect(fx){
 // ===== 可遇到的NPC模板池（社交拓展系统）=====
 const MEETABLE_NPCS = {
   courseTeacher: {
-    id:'courseTeacher', name:'王老师', avatar:'img/avatars/courseTeacher.jpg',
+    id:'courseTeacher', name:'王老师', avatar:'📚',
     traits:['博学','严厉','偶尔幽默'],
     responses:['这个知识点很重要，回去好好复习','你的作业我看了，做得不错','下次课前把这篇论文看完'],
     followups:['最近在研究一个新课题，有兴趣可以来旁听','有同学组了个学习小组，你要不要参加？','你最近进步很大']
   },
   classmate: {
-    id:'classmate', name:'小李', avatar:'img/avatars/classmate.jpg',
+    id:'classmate', name:'小李', avatar:'🎓',
     traits:['活泼','爱交朋友','有点话痨'],
     responses:['太巧了！我也在这','下次一起学习啊','你觉得这门课怎么样？'],
     followups:['我发现一个很好的学习资源','周末要不要一起去图书馆？','你听说那个新出的课了吗？']
   },
   partyFriend: {
-    id:'partyFriend', name:'小张', avatar:'img/avatars/classmate.jpg',
+    id:'partyFriend', name:'小张', avatar:'🎓',
     traits:['外向','热情','社交达人'],
     responses:['那个聚会真的太有意思了','我最近在做一个新项目','改天一起吃个饭？'],
     followups:['我认识一些有趣的人，要不要一起聚聚？','听说有个不错的活动','你对投资感兴趣吗？']
@@ -6538,7 +5861,7 @@ async function handleEncounterChoice(choiceIndex){
   if(eff.mood) G.mood = clamp(G.mood + eff.mood, 0, 200);
   if(eff.health) G.health = clamp(G.health + eff.health, 0, 200);
   if(eff.iq) G.IQ = clamp(G.IQ + eff.iq, 0, 200);
-  if(eff.eq) G.eq = clamp(G.eq + eff.eq, 0, 200);
+  if(eff.eq) G.EQ = clamp(G.EQ + eff.eq, 0, 200);
   // 禁用所有选项按钮
   var btns = document.querySelectorAll('#encounterChoices button');
   btns.forEach(function(b,i){
@@ -6563,7 +5886,7 @@ async function handleEncounterChoice(choiceIndex){
       '</div></div>';
   }
   // 调用AI生成回应
-  var playerState = {age:G.age, cash:G.cash, mood:G.mood, iq:G.IQ, eq:G.eq, health:G.health};
+  var playerState = {age:G.age, cash:G.cash, mood:G.mood, iq:G.IQ, eq:G.EQ, health:G.health};
   var aiResult = await generateEncounterAIResponse(sceneKey, npcName, choice.text, eff, playerState);
   // 存储AI判断的加微信意愿
   G._encounter.wantFriend = aiResult.wantFriend;
@@ -7111,6 +6434,7 @@ async function openProactiveChat(npcId){
           addChatBubble('npc','在吗？');
         }
       }).catch(e=>{
+        console.error('AI greeting failed:',e);
         removeTypingIndicator();
         addChatBubble('npc',getTemplateReply(npcId,'__greeting__')||'在吗？');
         showToast('网络恢复中...');
@@ -7122,6 +6446,7 @@ async function openProactiveChat(npcId){
       if(input)input.focus();
     },100);
   }catch(e){
+    console.error('openProactiveChat error:',e);
     // Ensure overlay is shown even if something fails
     try{document.getElementById('chatOverlay').classList.add('show');}catch(_){}
   }
@@ -7139,7 +6464,7 @@ async function _generateNPCAIReply(npcId, playerMsg, chatHist){
   else if(stage==='close'||aff>=40){relHint='你们在暧昧升温中，可以适当调情。';}
   else if(rel>=30){relHint='你们关系很好，像老朋友一样。';}
   else if(rel<=-10){relHint='你们关系不太好，说话带刺。';}
-  const prompt='你是"'+p.name+'"，性格：'+p.traits.join('、')+'。背景：'+p.background+'。'+relHint+
+  const prompt='你是"'+p.name+'"，性格：'+p.traits.join('、')+'。背景：'+p.background||p.traits.join('、')+'。'+relHint+
     '\n玩家对你说："'+playerMsg+'"\n请用你的性格回复，不超过3句话，像真人一样自然。';
   try{
     const resp=await fetch('https://token-plan-cn.xiaomimimo.com/v1/chat/completions',{
@@ -7153,7 +6478,7 @@ async function _generateNPCAIReply(npcId, playerMsg, chatHist){
         return data.choices[0].message.content.trim();
       }
     }
-  }catch(e){}
+  }catch(e){console.error('NPC AI error:',e);}
   return getTemplateReply(npcId,playerMsg);
 }
 
@@ -7182,6 +6507,7 @@ async function startProactiveChatWith(npcId,greetingIdx){
   try{
     aiReply=await generateNPCReply(npcId,greeting.text,[]);
   }catch(e){
+    console.error('AI start reply failed:',e);
     aiReply=getTemplateReply(npcId,greeting.text);
     showToast('网络恢复中...');
   }
@@ -7383,7 +6709,7 @@ function triggerGathering(){
 }
 
 // ===== 新增NPC：健身房教练/邻居/前同事/导师 =====
-const EXTRA_NPCS={gymCoach:{name:'健身教练',avatar:'img/avatars/dad.jpg'},neighbor:{name:'邻居老赵',avatar:'img/avatars/mom.jpg'},exColleague:{name:'前同事小周',avatar:'img/avatars/colleague.jpg'},mentor:{name:'导师李教授',avatar:'img/avatars/courseTeacher.jpg'},scammer:{name:'神秘号码',avatar:'img/avatars/zhang_chief.jpg'},delivery:{name:'快递小哥',avatar:'🛵'}};
+const EXTRA_NPCS={gymCoach:{name:'健身教练',avatar:'img/avatars/gymCoach.png'},neighbor:{name:'邻居老赵',avatar:'img/avatars/neighbor.png'},exColleague:{name:'前同事小周',avatar:'img/avatars/exColleague.png'},mentor:{name:'导师李教授',avatar:'img/avatars/mentor.png'},scammer:{name:'神秘号码',avatar:'🎭'},delivery:{name:'快递小哥',avatar:'🛵'}};
 
 // ===== 扩展通讯录聊天话题 =====
 const EXTRA_CHAT_TOPICS=[
@@ -7732,7 +7058,7 @@ async function _aiFillThread(thread){
   for(const round of thread.rounds){
     if(!round.npcMsgs||round._aiFilled)continue;
     const origMsg=round.npcMsgs[0];
-    const prompt='你是"'+p.name+'"，性格：'+p.traits.join('、')+'。背景：'+p.background+
+    const prompt='你是"'+p.name+'"，性格：'+p.traits.join('、')+'。背景：'+p.background||p.traits.join('、')+
       '\n对玩家说："'+origMsg+'"\n请用你的性格重新表达这个意思，不超过2句话，像真人一样自然。';
     try{
       const resp=await fetch('https://token-plan-cn.xiaomimimo.com/v1/chat/completions',{
@@ -7747,7 +7073,7 @@ async function _aiFillThread(thread){
           round._aiFilled=true;
         }
       }
-    }catch(e){}
+    }catch(e){console.error('Thread AI fill error:',e);}
   }
 }
 
@@ -7869,7 +7195,8 @@ async function selectPhoneOption(optIdx){
         if(aiReply){nextRound.npcMsgs=[aiReply];}
       }catch(e){
         removeTypingIndicator();
-        }
+        console.error('Thread AI reply failed, using template:',e);
+      }
     }
     showToast('💬 还有后续消息需要回复');
   }else{
@@ -8248,10 +7575,12 @@ ${p.name}的家人/朋友是${relation}。玩家${gameState.age}岁，${gameStat
             AI_CHAT_CONFIG._fallbackCount=0;
             return _raw;
           }
-          }
+          console.warn('AI returned error content, using template:',_raw);
+        }
       }
       AI_CHAT_CONFIG._fallbackCount++;
     }catch(e){
+      console.error('AI reply failed:',e);
       AI_CHAT_CONFIG._fallbackCount++;
       // Exponential backoff before next attempt
       if(AI_CHAT_CONFIG._fallbackCount < AI_CHAT_CONFIG.maxFallback){
@@ -8720,6 +8049,7 @@ async function _doSendMessage(msg,npcId){
     // Generate AI reply
     reply=await generateNPCReply(npcId,aiMsg,history);
   }catch(e){
+    console.error('generateNPCReply error:',e);
     reply=getTemplateReply(npcId,msg);
     // v4.0.0: Friendly network error toast
     showToast('网络恢复中...');
@@ -8765,6 +8095,7 @@ async function _doSendMessage(msg,npcId){
   try{
     cleanReply=processChatEffects(reply,npcId);
   }catch(e){
+    console.error('processChatEffects error:',e);
     cleanReply=reply.replace(/\[\w+:.*?\]/g,'');
   }
   // Parse OPT tags from AI reply
@@ -10593,10 +9924,8 @@ function genChatReply(npc,msg){
 
 
 // ====== V2 Batch3: Onboarding Auto-Start ======
-// 修复：引导弹窗不再自动覆盖欢迎页，改为用户点击开始后才触发
-(function(){
-  // 不再自动启动引导，等用户点"开始挑战"后再引导
-})();
+// 修复：不再自动启动引导，改为用户点击开始按钮后触发
+// (function(){var started=false;function tryStart(){if(started)return;if(typeof startGame==='function'&&typeof startOnboarding==='function'){started=true;setTimeout(function(){startOnboarding()},800)}}tryStart();document.addEventListener('DOMContentLoaded',tryStart);})();
 
 // ===== Pet System (ES5) =====
 var PET_SHOP=[
@@ -11570,7 +10899,8 @@ async function generateFriendInteraction(friend){
       }
     }
   } catch(e) {
-    }
+    console.warn('AI friend interaction failed:', e);
+  }
   
   return getPresetInteraction(friend);
 }
@@ -12179,6 +11509,7 @@ async function _doAdvanceMonth(){
   var safetyTimer=setTimeout(function(){
     if(!done){
       done=true;
+      console.error('advanceMonth TIMEOUT - forcing unlock');
       btn.disabled=false;btn.textContent='🚀 度过一月';
       try{refreshAll();}catch(e){}
     }
@@ -12187,6 +11518,7 @@ async function _doAdvanceMonth(){
     try{
       await advanceMonth();
     }catch(e){
+      console.error('advanceMonth error:',e);
       if(window.showError)showError('月份推进出错: '+e.message);
     }
     if(done)return; // safety already fired
@@ -12197,11 +11529,11 @@ async function _doAdvanceMonth(){
       var total=calcTotalAsset();
       document.getElementById('totalAsset').textContent=fmt(total);
       document.getElementById('cashDisplay').textContent=fmt(G.cash);
-    }catch(e){}
+    }catch(e){console.error('refresh error:',e);}
     setTimeout(function(){
       try{
         saveGame();refreshAll();checkAchievements();
-      }catch(e){}
+      }catch(e){console.error('post-save error:',e);}
       btn.disabled=false;btn.textContent='🚀 度过一月';
       // v4.0.0: Show monthly summary if not game over
       if(!G.gameOver){
@@ -12667,10 +11999,12 @@ ${threadContext}${historyText?'\n历史消息：\n'+historyText:''}
             AI_CHAT_CONFIG._fallbackCount=0;
             return reply;
           }
-          }
+          console.warn('Thread AI returned error content:',reply);
+        }
       }
       AI_CHAT_CONFIG._fallbackCount++;
     }catch(e){
+      console.error('Thread AI reply error:',e);
       AI_CHAT_CONFIG._fallbackCount++;
     }
   }
@@ -13556,14 +12890,14 @@ function confirmSchedule(npcId,typeLen,scheduleInfo,accept){
 // === buildMomentsPrompt ===
 function buildMomentsPrompt(ctx){
   const npcPool=[
-    {id:'mom',name:'妈妈',avatar:'img/avatars/wife.jpg',traits:['唠叨','关心','节俭','爱转发养生文章'],topics:['退休生活','做饭','广场舞','养生','别人家孩子']},
-    {id:'dad',name:'爸爸',avatar:'img/avatars/husband.jpg',traits:['沉默','报喜不报忧','偶尔温情'],topics:['钓鱼','下棋','养花','老战友','国际大事']},
-    {id:'bestie',name:'老王',avatar:'img/avatars/classmate.jpg',traits:['八卦','直爽','爱喝酒','损友','社会'],topics:['喝酒','聚会','吐槽','赚钱','豪车']},
+    {id:'mom',name:'妈妈',avatar:'👩',traits:['唠叨','关心','节俭','爱转发养生文章'],topics:['退休生活','做饭','广场舞','养生','别人家孩子']},
+    {id:'dad',name:'爸爸',avatar:'👨',traits:['沉默','报喜不报忧','偶尔温情'],topics:['钓鱼','下棋','养花','老战友','国际大事']},
+    {id:'bestie',name:'老王',avatar:'🎓',traits:['八卦','直爽','爱喝酒','损友','社会'],topics:['喝酒','聚会','吐槽','赚钱','豪车']},
     {id:'colleague',name:'小李',avatar:'💼',traits:['谨慎','消息灵通','爱吐槽','职场生存'],topics:['加班','公司八卦','行业动态','摸鱼','离职']},
     {id:'boss',name:'张总',avatar:'👔',traits:['圆滑','画饼','偶尔真诚','中年危机'],topics:['管理','行业趋势','投资','应酬','跑步']},
-    {id:'classmate',name:'小张',avatar:'img/avatars/classmate.jpg',traits:['攀比','怀旧','爱炫耀','消息灵通'],topics:['聚会','谁混得好','比较收入','谁结婚了','投资']},
-    {id:'banker',name:'刘经理',avatar:'img/avatars/banker.jpg',traits:['专业','殷勤','推销','信息差'],topics:['理财','基金','市场','存款利率']},
-    {id:'realtor',name:'小陈',avatar:'img/avatars/colleague.jpg',traits:['热情','夸大','逼单','信息量大'],topics:['房价','好房源','投资','学区房']},
+    {id:'classmate',name:'小张',avatar:'🎓',traits:['攀比','怀旧','爱炫耀','消息灵通'],topics:['聚会','谁混得好','比较收入','谁结婚了','投资']},
+    {id:'banker',name:'刘经理',avatar:'💰',traits:['专业','殷勤','推销','信息差'],topics:['理财','基金','市场','存款利率']},
+    {id:'realtor',name:'小陈',avatar:'💼',traits:['热情','夸大','逼单','信息量大'],topics:['房价','好房源','投资','学区房']},
     {id:'neighbor',name:'邻居老赵',avatar:'🏘️',traits:['热心','八卦','操心','小区万事通'],topics:['小区新闻','物业','菜价','天气','相亲']},
     {id:'exColleague',name:'前同事小周',avatar:'🔄',traits:['怀旧','感慨','爱比较'],topics:['前公司','跳槽','近况','行业变化']},
     {id:'mentor',name:'李教授',avatar:'📖',traits:['睿智','温和','有深度'],topics:['读书','思考','人生','哲学']},
@@ -13759,7 +13093,7 @@ function pickTemplate(){
   }
 
 // === _v4_debug ===
-
+function _v4_debug(){return (typeof V4_FLAGS!=='undefined'&&V4_FLAGS.debug);}
 
 // === _v4_clamp ===
 function _v4_clamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
@@ -13803,6 +13137,7 @@ function showTutorial(stepId){
 
 // === _tut_showOverlay ===
 function _tut_showOverlay(idx){
+  _tut_state.currentIdx = idx; // 修复：更新当前步骤索引
   const step = TUTORIAL_STEPS[idx];
   if(!step) return;
   const existing = document.getElementById('tutOverlay');
@@ -14226,7 +13561,7 @@ function notifyAsMessage(npcId,text){
     addNotification('system',text);
     return;
   }
-  const npc=NPCS[npcId]||{name:'系统',avatar:'img/avatars/zhang_chief.jpg'};
+  const npc=NPCS[npcId]||{name:'系统',avatar:'🎭'};
   const thread={
     id:G.phone.nextId++,npcId:npcId,npcName:npc.name,npcAvatar:npc.avatar,
     tplId:'event_'+G.totalMonths+'_'+npcId,type:'wechat',
@@ -14252,8 +13587,8 @@ function _renderNotificationsInMessages(html){
 function _debugAddTestMoments(){
   if(!G||!G.phone){alert('G.phone不存在');return;}
   const testNpcs=[
-    {npcId:'mom',npcName:'妈妈',npcAvatar:'img/avatars/wife.jpg',text:'今天天气真好，出去散步了 ☀️ 退休生活就是悠闲~'},
-    {npcId:'bestie',npcName:'老王',npcAvatar:'img/avatars/classmate.jpg',text:'升职了！从今天开始是部门经理了 💼 感谢所有支持我的人！'},
+    {npcId:'mom',npcName:'妈妈',npcAvatar:'👩',text:'今天天气真好，出去散步了 ☀️ 退休生活就是悠闲~'},
+    {npcId:'bestie',npcName:'老王',npcAvatar:'🎓',text:'升职了！从今天开始是部门经理了 💼 感谢所有支持我的人！'},
     {npcId:'colleague',npcName:'小李',npcAvatar:'💼',text:'又是加班到深夜的一天 😴 但看到成果还是有成就感的'}
   ];
   const commentPool=['mom','dad','bestie','colleague','classmate','neighbor','boss'];
@@ -14539,7 +13874,9 @@ function aiGenerateMoment(type){
 }
 function randPick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
-
 </script>
+<div class="help-fab" id="helpFab" onclick="openGuide()">❓</div>
+<div id="v4QuickMenu" class="v4-quick-menu" style="display:none;">
+  <div class="v4-menu-item" onclick="showPlaybook();document.getElementById('v4QuickMenu').style.display='none';">📖玩法手册</div>
 </body>
 </html>
