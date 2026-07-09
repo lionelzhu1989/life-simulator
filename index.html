@@ -3023,6 +3023,11 @@ function switchInvestTab(name){
 
 // ========== 初始化 ==========
 function startGame(){
+  // 首次进入时显示新手引导
+  if(!localStorage.getItem('ob_done_v2') && typeof startOnboarding==='function'){
+    startOnboarding();
+    return;
+  }
   if(loadGame()&&!G.gameOver){
     migrateSave();
     // V6: 新字段迁移（旧存档兼容）
@@ -10591,7 +10596,10 @@ function genChatReply(npc,msg){
 
 
 // ====== V2 Batch3: Onboarding Auto-Start ======
-(function(){var started=false;function tryStart(){if(started)return;if(typeof startGame==='function'&&typeof startOnboarding==='function'){started=true;setTimeout(function(){startOnboarding()},800)}}tryStart();document.addEventListener('DOMContentLoaded',tryStart);})();
+// 修复：引导弹窗不再自动覆盖欢迎页，改为用户点击开始后才触发
+(function(){
+  // 不再自动启动引导，等用户点"开始挑战"后再引导
+})();
 
 // ===== Pet System (ES5) =====
 var PET_SHOP=[
